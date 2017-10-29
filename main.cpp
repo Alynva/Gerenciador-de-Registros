@@ -6,6 +6,16 @@
 #include "pause_console_with_message.cpp"
 #include "to_string.cpp"
 
+#define TAM_CHAVE 3
+#define TAM_NUMERO_DDD 2
+#define TAM_NUMERO_PREFIXO 5
+#define TAM_NUMERO_SUFIXO 4
+#define TAM_DATA_DIA 2
+#define TAM_DATA_MES 2
+#define TAM_DATA_ANO 4
+#define TAM_EMAIL 30
+#define TAM_NOME 48
+
 using namespace std;
 
 int main() {
@@ -69,19 +79,19 @@ int main() {
 					}
 
 					string chave = "";
-					while (strlen(chave.c_str()) != 3) { // Pede a chave do registro enquanto a inserida não tiver um comprimento de 3 caracteres
+					while (strlen(chave.c_str()) != TAM_CHAVE) { // Pede a chave do registro enquanto a inserida não tiver um comprimento de 3 caracteres
 						cout << "Insira a chave para o registro (XXX): ";
 						cin >> chave;
 					}
 
 					string numero_ddd = "", numero_prefixo = "", numero_sufixo = "";
-					while (strlen(numero_ddd.c_str()) != 2 || strlen(numero_prefixo.c_str()) != 5 || strlen(numero_sufixo.c_str()) != 4) { // Pede o número (DDD, prefixo e sufixo) enquanto não tiverem o comprimento 2, 5 e 4, respectivamente, de caracteres
+					while (strlen(numero_ddd.c_str()) != TAM_NUMERO_DDD || strlen(numero_prefixo.c_str()) != TAM_NUMERO_PREFIXO || strlen(numero_sufixo.c_str()) != TAM_NUMERO_SUFIXO) { // Pede o número (DDD, prefixo e sufixo) enquanto não tiverem o comprimento 2, 5 e 4, respectivamente, de caracteres
 						cout << "Insira o número de telefone (XX XXXXX XXXX): ";
 						cin >> numero_ddd >> numero_prefixo >> numero_sufixo;
 					}
 
 					string data_dia = "", data_mes = "", data_ano = "";
-					while (strlen(data_dia.c_str()) != 2 || strlen(data_mes.c_str()) != 2 || strlen(data_ano.c_str()) != 4) { // Pede a dara (dia, mês e ano) enquanto nao tiverem o comprimento 2, 2, e 4, respectivamente, de caracteres
+					while (strlen(data_dia.c_str()) != TAM_DATA_DIA || strlen(data_mes.c_str()) != TAM_DATA_MES || strlen(data_ano.c_str()) != TAM_DATA_ANO) { // Pede a dara (dia, mês e ano) enquanto nao tiverem o comprimento 2, 2, e 4, respectivamente, de caracteres
 						cout << "Insira a data de nascimento (XX XX XXXX): ";
 						cin >> data_dia >> data_mes >> data_ano;
 					}
@@ -90,15 +100,15 @@ int main() {
 					do {
 						cout << "Insira o e-mail: ";
 						cin >> email;
-					} while (strlen(email.c_str()) > 30); // Pede o email novamente caso o comprimento exceda 30 caracteres
-					email.append(30 - strlen(email.c_str()), ' '); // Preenche o restante com espaços
+					} while (strlen(email.c_str()) > TAM_EMAIL); // Pede o email novamente caso o comprimento exceda 30 caracteres
+					email.append(TAM_EMAIL - strlen(email.c_str()), ' '); // Preenche o restante com espaços
 
 					string nome = "";
 					do {
 						cout << "Insira o nome: ";
 						getline(cin >> ws, nome);
-					} while (strlen(nome.c_str()) > 48); /// Pede o nome novamente caso o comprimento exceda 48 caracteres
-					nome.append(48 - strlen(nome.c_str()), ' '); // Preenche o restante com espaços
+					} while (strlen(nome.c_str()) > TAM_NOME); /// Pede o nome novamente caso o comprimento exceda 48 caracteres
+					nome.append(TAM_NOME - strlen(nome.c_str()), ' '); // Preenche o restante com espaços
 
 					cout << "\nDados reconhecidos:" << endl;
 					cout << "Chave: " << chave << endl;
