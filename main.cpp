@@ -2,24 +2,11 @@
 #include <stdio.h>
 #include <iostream>
 #include <string.h>
+#include "clear_console.cpp"
+#include "pause_console_with_message.cpp"
 #include "to_string.cpp"
 
 using namespace std;
-
-#ifdef _WIN32
-#define CLEAR "cls"
-#else //In any other OS
-#define CLEAR "clear"
-#endif
-
-void pause(string msg = "continuar") {
-	string command = "echo Pressione ENTER para ";
-	command.append(msg);
-	command.append(" . . . && ( read x 2> nul; rm nul || pause > nul )");
-
-    system(command.c_str());
-    return;
-}
 
 int main() {
 	
@@ -51,7 +38,7 @@ int main() {
 			case 1:
 
 				pause("zerar o arquivo");
-				
+
 				lf = freopen("arquivo.bin", "w+b", lf);
 				
 				if(lf == NULL) {
