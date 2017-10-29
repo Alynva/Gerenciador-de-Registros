@@ -5,7 +5,7 @@ CC = g++
 C_VERSION = -std=c++11
 
 # Arquivo principal
-OBJ_FILE = main.c
+OBJ_FILE = main.cpp
 
 # Arquivos auxiliares
 AUX_FILES = 
@@ -35,3 +35,5 @@ clean:
 
 run:
 	$(OUT_FILE)
+
+full: all run
