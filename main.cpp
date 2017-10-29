@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <string.h>
+#include "to_string.cpp"
 
 using namespace std;
 
@@ -15,6 +16,7 @@ void pause(string msg = "continuar") {
 	string command = "echo Pressione ENTER para ";
 	command.append(msg);
 	command.append(" . . . && ( read x 2> nul; rm nul || pause > nul )");
+
     system(command.c_str());
     return;
 }
@@ -22,7 +24,7 @@ void pause(string msg = "continuar") {
 int main() {
 	
 	FILE *lf;
-	lf = fopen("arquivo.bin", "r+b");
+	lf = fopen("arquivo.bin", "a+b");
 	
 	if(lf == NULL) {
 		printf("Erro na abertura do arquivo.\n");
@@ -47,6 +49,9 @@ int main() {
 
 		switch (comando) {
 			case 1:
+
+				pause("zerar o arquivo");
+				
 				lf = freopen("arquivo.bin", "w+b", lf);
 				
 				if(lf == NULL) {
@@ -59,8 +64,6 @@ int main() {
 				cabecalho.append(to_string(n_registros));
 				cabecalho.append(50 - strlen(cabecalho.c_str()), ' ');
 				fprintf(lf, "%s", cabecalho.c_str());
-
-				pause("zerar o arquivo");
 				break;
 			case 2:
 				lf = freopen("arquivo.bin", "a+b", lf);
