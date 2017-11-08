@@ -258,129 +258,55 @@ int main() {
 					for (unsigned int i = total_read; i < sizeof(buffer); i++)
 						buffer[i] = ' ';
 
+					int reg_pos;
 					if (n_excluidos == 0) {
 						if (n_registros < 4) {
-							char first_char = buffer[(TAM_CABECALHO + n_registros * TAM_REGISTRO + TAM_REGISTRO)];
-
-							snprintf(
-								buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO),
-								TAM_CHAVE+1,
-								"%s",
-								chave.c_str()
-							);
-							snprintf(
-								buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO) + TAM_CHAVE,
-								(TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO)+1,
-								"%s%s%s",
-								numero_ddd.c_str(),
-								numero_prefixo.c_str(),
-								numero_sufixo.c_str()
-							);
-							snprintf(
-								buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO) + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO),
-								(TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO)+1,
-								"%s%s%s",
-								data_dia.c_str(),
-								data_mes.c_str(),
-								data_ano.c_str()
-							);
-							snprintf(
-								buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO) + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO),
-								TAM_EMAIL+1,
-								"%s",
-								email.c_str()
-							);
-							snprintf(
-								buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO) + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO) + TAM_EMAIL,
-								TAM_NOME+1,
-								"%s",
-								nome.c_str()
-							);
-
-							buffer[(TAM_CABECALHO + n_registros * TAM_REGISTRO + TAM_REGISTRO)] = first_char;
-
+							reg_pos = TAM_CABECALHO + n_registros * TAM_REGISTRO;
 						} else {
-
-							char first_char = buffer[((n_registros + 1) % 5) * TAM_REGISTRO + TAM_REGISTRO];
-
-							snprintf(
-								buffer + ((n_registros + 1) % 5) * TAM_REGISTRO,
-								TAM_CHAVE+1,
-								"%s",
-								chave.c_str()
-							);
-							snprintf(
-								buffer + ((n_registros + 1) % 5) * TAM_REGISTRO + TAM_CHAVE,
-								(TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO)+1,
-								"%s%s%s",
-								numero_ddd.c_str(),
-								numero_prefixo.c_str(),
-								numero_sufixo.c_str()
-							);
-							snprintf(
-								buffer + ((n_registros + 1) % 5) * TAM_REGISTRO + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO),
-								(TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO)+1,
-								"%s%s%s",
-								data_dia.c_str(),
-								data_mes.c_str(),
-								data_ano.c_str()
-							);
-							snprintf(
-								buffer + ((n_registros + 1) % 5) * TAM_REGISTRO + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO),
-								TAM_EMAIL+1,
-								"%s",
-								email.c_str()
-							);
-							snprintf(
-								buffer + ((n_registros + 1) % 5) * TAM_REGISTRO + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO) + TAM_EMAIL,
-								TAM_NOME+1,
-								"%s",
-								nome.c_str()
-							);
-
-							buffer[((n_registros + 1) % 5) * TAM_REGISTRO + TAM_REGISTRO] = first_char;
+							reg_pos = ((n_registros + 1) % 5) * TAM_REGISTRO;
 						}
 					} else {
-						int reg_pos = RRN2REGINBLOCK(pos);
-						char first_char = buffer[(reg_pos + TAM_REGISTRO)];
-
-						snprintf(
-							buffer + reg_pos,
-							TAM_CHAVE+1,
-							"%s",
-							chave.c_str()
-						);
-						snprintf(
-							buffer + reg_pos + TAM_CHAVE,
-							(TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO)+1,
-							"%s%s%s",
-							numero_ddd.c_str(),
-							numero_prefixo.c_str(),
-							numero_sufixo.c_str()
-						);
-						snprintf(
-							buffer + reg_pos + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO),
-							(TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO)+1,
-							"%s%s%s",
-							data_dia.c_str(),
-							data_mes.c_str(),
-							data_ano.c_str()
-						);
-						snprintf(
-							buffer + reg_pos + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO),
-							TAM_EMAIL+1,
-							"%s",
-							email.c_str()
-						);
-						snprintf(
-							buffer + reg_pos + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO) + TAM_EMAIL,
-							TAM_NOME+1,
-							"%s",
-							nome.c_str()
-						);
-						
-						buffer[(reg_pos + TAM_REGISTRO)] = first_char;
+						reg_pos = RRN2REGINBLOCK(pos);
 					}
+
+					char first_char = buffer[(reg_pos + TAM_REGISTRO)];
+
+					snprintf(
+						buffer + reg_pos,
+						TAM_CHAVE+1,
+						"%s",
+						chave.c_str()
+					);
+					snprintf(
+						buffer + reg_pos + TAM_CHAVE,
+						(TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO)+1,
+						"%s%s%s",
+						numero_ddd.c_str(),
+						numero_prefixo.c_str(),
+						numero_sufixo.c_str()
+					);
+					snprintf(
+						buffer + reg_pos + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO),
+						(TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO)+1,
+						"%s%s%s",
+						data_dia.c_str(),
+						data_mes.c_str(),
+						data_ano.c_str()
+					);
+					snprintf(
+						buffer + reg_pos + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO),
+						TAM_EMAIL+1,
+						"%s",
+						email.c_str()
+					);
+					snprintf(
+						buffer + reg_pos + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO) + TAM_EMAIL,
+						TAM_NOME+1,
+						"%s",
+						nome.c_str()
+					);
+					
+					buffer[(reg_pos + TAM_REGISTRO)] = first_char;
 
 					n_registros++;
 					if (n_excluidos > 0) {
