@@ -11,9 +11,11 @@
 #define TAM_NUMERO_DDD 2
 #define TAM_NUMERO_PREFIXO 5
 #define TAM_NUMERO_SUFIXO 4
+#define TAM_NUMERO TAM_NUMERO_DDD+TAM_NUMERO_PREFIXO+TAM_NUMERO_SUFIXO
 #define TAM_DATA_DIA 2
 #define TAM_DATA_MES 2
 #define TAM_DATA_ANO 4
+#define TAM_DATA TAM_DATA_DIA+TAM_DATA_MES+TAM_DATA_ANO
 #define TAM_EMAIL 30
 #define TAM_NOME 48
 
@@ -147,7 +149,8 @@ int main() {
 				"\t 0 - Zerar arquivo\n" \
 				"\t 1 - Inserir novo registro\n" \
 				"\t 2 - Busca por registro\n" \
-				"\t 3 - Remover registro");
+				"\t 3 - Remover registro\n" \
+				"\t 4 - Listar todos os registros");
 
 		printf("\nDigite o opcao: ");
 		scanf("%d", &opcao);
@@ -478,13 +481,148 @@ int main() {
 						}
 
 						
-						cout << "O registro foi excluído com sucesso." << endl;
+						cout << "O registro foi excluido com sucesso." << endl;
 					}
 
 					pause();
 				}
 				break;
 
+			case 4:
+				{
+					cout << endl;
+
+					if (n_registros > 0) {
+						int buffer_index = -1;
+								
+						string found_chave,
+							found_numero_ddd,
+							found_numero_prefixo,
+							found_numero_sufixo,
+							found_data_dia,
+							found_data_mes,
+							found_data_ano,
+							found_email,
+							found_nome;
+
+						cout << "Chave";
+						for (int i = 0; i < TAM_CHAVE - 5; i++)
+							cout << " ";
+						cout << "\tNumero";
+						for (int i = 0; i < (TAM_NUMERO + 4) - 6; i++)
+							cout << " ";
+						cout << "\tData";
+						for (int i = 0; i < (TAM_DATA + 2) - 4; i++)
+							cout << " ";
+						cout << "\tE-mail";
+						for (int i = 0; i < TAM_EMAIL - 6; i++)
+							cout << " ";
+						cout << "\tNome";
+						for (int i = 0; i < TAM_NOME - 4; i++)
+							cout << " ";
+						cout << endl << endl;
+
+
+						do {
+							buffer_index++;
+							//fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
+							//fread(buffer, sizeof(char), sizeof(buffer), lf);
+
+							int seek_buffer = 0;
+							int max_registros;
+							if (buffer_index == 0) {
+								seek_buffer = TAM_CABECALHO;
+							}
+
+							int tot_registros = n_registros + n_excluidos;
+
+							if (buffer_index == 0) { // Está no primeiro bloco
+								max_registros = tot_registros > 4 ? 4 : tot_registros;
+							} else if (4 + buffer_index * 5 <= tot_registros) { // Está noutro bloco, completo
+								max_registros = 5;
+							} else { // Está noutro bloco, incompleto
+								max_registros = (tot_registros - 4) % 5;
+							}
+
+							for (int i = 0, registro_index = 0; i < max_registros; i++, registro_index++) {
+								// ABRE O ARQUIVO TODA VEZ POR QUE POR ALGUM MOTIVO A FUNÇÃO SSCANF "ZERA" O BUFFER
+								fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
+								fread(buffer, sizeof(char), sizeof(buffer), lf);
+
+								string pattern;
+								if (seek_buffer + registro_index * TAM_REGISTRO > 0) {
+									pattern = "%*";
+									pattern.append(to_string(seek_buffer + registro_index * TAM_REGISTRO));
+									pattern.append("[^\n]%");
+								} else {
+									pattern = "%";
+								}
+								pattern.append(to_string(TAM_CHAVE));
+								pattern.append("[^\n]");
+
+								//OBTEVE O REGISTRO
+								int pos = buffer_index * TAM_BLOCK + seek_buffer + registro_index * TAM_REGISTRO;
+
+								
+								found_chave = "",
+									found_numero_ddd = "",
+									found_numero_prefixo = "",
+									found_numero_sufixo = "",
+									found_data_dia = "",
+									found_data_mes = "",
+									found_data_ano = "",
+									found_email = "",
+									found_nome = "";
+
+								int j = RRN2REGINBLOCK(pos);
+								for (int k = 0; k < TAM_CHAVE; j++, k++) {
+									found_chave.append(to_string(buffer[j]));
+								}
+								for (int k = 0; k < TAM_NUMERO_DDD; j++, k++) {
+									found_numero_ddd.append(to_string(buffer[j]));
+								}
+								for (int k = 0; k < TAM_NUMERO_PREFIXO; j++, k++) {
+									found_numero_prefixo.append(to_string(buffer[j]));
+								}
+								for (int k = 0; k < TAM_NUMERO_SUFIXO; j++, k++) {
+									found_numero_sufixo.append(to_string(buffer[j]));
+								}
+								for (int k = 0; k < TAM_DATA_DIA; j++, k++) {
+									found_data_dia.append(to_string(buffer[j]));
+								}
+								for (int k = 0; k < TAM_DATA_MES; j++, k++) {
+									found_data_mes.append(to_string(buffer[j]));
+								}
+								for (int k = 0; k < TAM_DATA_ANO; j++, k++) {
+									found_data_ano.append(to_string(buffer[j]));
+								}
+								for (int k = 0; k < TAM_EMAIL; j++, k++) {
+									found_email.append(to_string(buffer[j]));
+								}
+								for (int k = 0; k < TAM_NOME; j++, k++) {
+									found_nome.append(to_string(buffer[j]));
+								}
+
+								if (found_chave != "***") {
+									cout << found_chave << "\t";
+									cout << "(" << found_numero_ddd << ") " << found_numero_prefixo << "-" << found_numero_sufixo << "\t";
+									cout << found_data_dia << "/" << found_data_mes << "/" << found_data_ano << "\t";
+									cout << found_email << "\t";
+									cout << found_nome << "\t";
+									cout << endl;
+								}
+
+							}
+
+						} while (buffer_index < (n_registros + n_excluidos) / 5);
+					} else {
+						cout << "Nao ha nenhum registro no arquivo." << endl;
+					}
+
+					cout << endl;
+					pause();
+				}
+				break;
 			default:
 				cout << "Opcao inválida." << endl;
 				pause();
