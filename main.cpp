@@ -29,8 +29,16 @@ using namespace std;
 int n_registros = 0,
 	n_excluidos = 0;
 
-int strIsAlpha(const string& s) {
-    return count_if(s.begin(), s.end(), [](unsigned char c){ return isalpha(c); }) == (unsigned int) strlen(s.c_str());
+bool strIsAlpha(const string& s) {
+    return (unsigned int) count_if(s.begin(), s.end(), [](unsigned char c){ return isalpha(c); }) == (unsigned int) strlen(s.c_str());
+}
+bool strIsInteger(const std::string & s) {
+   if(s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false;
+
+   char * p;
+   strtol(s.c_str(), &p, 10);
+
+   return (*p == 0);
 }
 
 int busca(string chave) {
@@ -141,7 +149,7 @@ int main() {
 				"\t 2 - Busca por registro\n" \
 				"\t 3 - Remover registro");
 
-		printf("\nDigite o opção: ");
+		printf("\nDigite o opcao: ");
 		scanf("%d", &opcao);
 		cout << endl;
 
@@ -190,18 +198,26 @@ int main() {
 
 					string chave = "";
 					while (strlen(chave.c_str()) != TAM_CHAVE || !strIsAlpha(chave)) { // Pede a chave do registro enquanto a inserida não tiver um comprimento de 3 caracteres
-						cout << "Insira a chave para o registro (XXX): ";
+						cout << "Insira uma chave alfabetica para o registro (XXX): ";
 						cin >> chave;
 					}
 
 					string numero_ddd = "", numero_prefixo = "", numero_sufixo = "";
-					while (strlen(numero_ddd.c_str()) != TAM_NUMERO_DDD || strlen(numero_prefixo.c_str()) != TAM_NUMERO_PREFIXO || strlen(numero_sufixo.c_str()) != TAM_NUMERO_SUFIXO) { // Pede o Numero (DDD, prefixo e sufixo) enquanto não tiverem o comprimento 2, 5 e 4, respectivamente, de caracteres
-						cout << "Insira o Numero de telefone (XX XXXXX XXXX): ";
+					while (
+						strlen(numero_ddd.c_str()) != TAM_NUMERO_DDD || !strIsInteger(numero_ddd) ||
+						strlen(numero_prefixo.c_str()) != TAM_NUMERO_PREFIXO || !strIsInteger(numero_prefixo) ||
+						strlen(numero_sufixo.c_str()) != TAM_NUMERO_SUFIXO || !strIsInteger(numero_sufixo)
+					) { // Pede o numero (DDD, prefixo e sufixo) enquanto não tiverem o comprimento 2, 5 e 4, respectivamente, de caracteres
+						cout << "Insira o numero de telefone (XX XXXXX XXXX): ";
 						cin >> numero_ddd >> numero_prefixo >> numero_sufixo;
 					}
 
 					string data_dia = "", data_mes = "", data_ano = "";
-					while (strlen(data_dia.c_str()) != TAM_DATA_DIA || strlen(data_mes.c_str()) != TAM_DATA_MES || strlen(data_ano.c_str()) != TAM_DATA_ANO) { // Pede a dara (dia, mês e ano) enquanto nao tiverem o comprimento 2, 2, e 4, respectivamente, de caracteres
+					while (
+						strlen(data_dia.c_str()) != TAM_DATA_DIA || !strIsInteger(data_dia) ||
+						strlen(data_mes.c_str()) != TAM_DATA_MES || !strIsInteger(data_mes) ||
+						strlen(data_ano.c_str()) != TAM_DATA_ANO || !strIsInteger(data_ano)
+					) { // Pede a dara (dia, mês e ano) enquanto nao tiverem o comprimento 2, 2, e 4, respectivamente, de caracteres
 						cout << "Insira a data de nascimento (XX XX XXXX): ";
 						cin >> data_dia >> data_mes >> data_ano;
 					}
@@ -406,7 +422,7 @@ int main() {
 				{
 					string chave = "";
 					do {
-						cout << "Insira a chave para ser buscada (XXX): ";
+						cout << "Insira uma chave alfabetica para ser buscada (XXX): ";
 						cin >> chave;
 					} while (strlen(chave.c_str()) != 3 || !strIsAlpha(chave));
 
@@ -416,10 +432,10 @@ int main() {
 					cout << endl;
 
 					if (!achou) {
-						cout << "Não foi encontrado nenhum registro com esta chave." << endl;
+						cout << "Nao foi encontrado nenhum registro com esta chave." << endl;
 					} else {
 						int buffer_index = RRN2NBLOCK(pos);
-						cout << endl << buffer_index << endl;
+						//cout << endl << buffer_index << endl;
 
 
 						fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
@@ -465,7 +481,7 @@ int main() {
 							found_nome.append(to_string(buffer[j]));
 						}
 
-						cout << "A chave foi encontrada! Aqui estão os dados:" << endl << endl;
+						cout << "A chave foi encontrada! Aqui estao os dados:" << endl << endl;
 						cout << "Chave:\t\t\t" << found_chave << endl;
 						cout << "Telefone:\t\t(" << found_numero_ddd << ") " << found_numero_prefixo << "-" << found_numero_sufixo << endl;
 						cout << "Data de nascimento:\t" << found_data_dia << "/" << found_data_mes << "/" << found_data_ano << endl;
@@ -483,7 +499,7 @@ int main() {
 				{
 					string chave = "";
 					do {
-						cout << "Insira a chave para ser excluída (XXX): ";
+						cout << "Insira uma chave alfabetica para ser excluida (XXX): ";
 						cin >> chave;
 					} while (strlen(chave.c_str()) != 3 || !strIsAlpha(chave));
 
@@ -493,7 +509,7 @@ int main() {
 					cout << endl;
 
 					if (!achou) {
-						cout << "Não foi encontrado nenhum registro com esta chave." << endl;
+						cout << "Nao foi encontrado nenhum registro com esta chave." << endl;
 					} else {
 						int buffer_index = pos / TAM_BLOCK;
 
@@ -544,7 +560,7 @@ int main() {
 				break;
 
 			default:
-				cout << "Opção inválida." << endl;
+				cout << "Opcao inválida." << endl;
 				pause();
 				break;
 		}
