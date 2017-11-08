@@ -159,7 +159,7 @@ int main() {
 						buffer[i] = ' ';
 
 					cabecalho = "N reg: ";
-					cabecalho.append(to_string((n_registros + n_excluidos)));
+					cabecalho.append(to_string(n_registros));
 					cabecalho.append("\tN exl: ");
 					cabecalho.append(to_string(n_excluidos));
 					cabecalho.append(TAM_CABECALHO - strlen(cabecalho.c_str()), ' '); // Preenche a string com espaço até dar o tamanho do cabeçalho
@@ -312,7 +312,7 @@ int main() {
 					++n_registros;
 
 					cabecalho = "N reg: ";
-					cabecalho.append(to_string((n_registros + n_excluidos)));
+					cabecalho.append(to_string(n_registros));
 					cabecalho.append("\tN exl: ");
 					cabecalho.append(to_string(n_excluidos));
 					cabecalho.append(TAM_CABECALHO - strlen(cabecalho.c_str()), ' ');
@@ -342,7 +342,7 @@ int main() {
 				}
 				break;
 
-			case 2:
+			case 2: // BUSCAR
 				{
 					string chave = "";
 					do {
@@ -418,7 +418,7 @@ int main() {
 				}
 				break;
 
-			case 3:
+			case 3: // EXCLUIR
 				{
 					string chave = "";
 					do {
@@ -437,6 +437,7 @@ int main() {
 						int buffer_index = pos / TAM_BLOCK;
 
 						--n_registros;
+						++n_excluidos;
 						
 						fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
 						fread(buffer, sizeof(char), sizeof(buffer), lf);
@@ -449,7 +450,7 @@ int main() {
 						// QUANDO APAGA, ELE ESCREVE O BLOCO COMO UM BLOCO NOVO, AO INVÉS DE REESCREVE-LO
 
 						cabecalho = "N reg: ";
-						cabecalho.append(to_string((n_registros + n_excluidos)));
+						cabecalho.append(to_string(n_registros));
 						cabecalho.append("\tN exl: ");
 						cabecalho.append(to_string(n_excluidos));
 						cabecalho.append(TAM_CABECALHO - strlen(cabecalho.c_str()), ' ');
@@ -470,7 +471,7 @@ int main() {
 							char first_char = buffer[TAM_CABECALHO];
 							snprintf(buffer, TAM_CABECALHO + 1, "%s", cabecalho.c_str());
 							buffer[TAM_CABECALHO] = first_char;
-							fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
+							fseek(lf, 0, SEEK_SET);
 							fwrite(buffer, sizeof(char), sizeof(buffer), lf);
 							fflush(lf);
 						}
