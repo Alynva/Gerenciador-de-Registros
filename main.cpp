@@ -57,9 +57,9 @@ int main() {
 		cout << endl;
 
 		switch (opcao) {
-			case -1:
+			case -1: // Sair
 				break;
-			case 0:
+			case 0: // Zerar arquivo
 
 				pause("zerar o arquivo"); // Confirma a ação com o usuário
 
@@ -84,7 +84,7 @@ int main() {
 				fwrite(buffer, sizeof(char), sizeof(buffer), lf);
 				fflush(lf); // Força a atualização do arquivo
 				break;
-			case 1:
+			case 1: // Inserir novo registro
 				{ // '{}' necessário para criar um escopo e poder declarar variáveis nele
 					lf = freopen("arquivo.bin", "r+b", lf);
 					
@@ -98,9 +98,6 @@ int main() {
 					int total_read = fread(buffer, sizeof(char), sizeof(buffer), lf);
 					for (unsigned int i = total_read; i < sizeof(buffer); i++)
 						buffer[i] = ' ';
-
-					cout << "Numero do bloco:" << endl << buffer_index << endl << endl;
-					cout << "Bloco:" << endl << buffer << endl << endl;
 
 					string chave = "";
 					while (strlen(chave.c_str()) != TAM_CHAVE) { // Pede a chave do registro enquanto a inserida não tiver um comprimento de 3 caracteres
@@ -145,7 +142,6 @@ int main() {
 
 					// Grava os dados
 					if (n_registros < 4) {
-						cout <<  (TAM_CABECALHO + n_registros * TAM_REGISTRO) << endl;
 						snprintf(
 							buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO),
 							TAM_CHAVE+1,
@@ -222,18 +218,33 @@ int main() {
 
 					++n_registros;
 
+					cabecalho = "";
+					cabecalho.append(to_string(n_registros));
+					cabecalho.append(TAM_CABECALHO - strlen(cabecalho.c_str()), ' ');
+					if (buffer_index == 0) {
+						char first_char = buffer[TAM_CABECALHO];
+						cout << endl << first_char << endl;
+						snprintf(buffer + 21, TAM_CABECALHO - 20, "%s", cabecalho.c_str());
+						buffer[TAM_CABECALHO] = first_char;
+					}
+
 					fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
 					fwrite(buffer, sizeof(char), sizeof(buffer), lf);
 
-					// Reabre o arquivo e atualiza o cabeçalho
-					lf = freopen("arquivo.bin", "r+b", lf);
-					rewind(lf);
-					cabecalho = "Numero de registros: ";
-					cabecalho.append(to_string(n_registros));
-					cabecalho.append(TAM_CABECALHO - strlen(cabecalho.c_str()), ' ');
-					fprintf(lf, "%s", cabecalho.c_str());
-
 					fflush(lf); // Força a atualização do arquivo
+
+					// Reabre o arquivo e atualiza o cabeçalho
+					if (buffer_index != 0) {
+						fseek(lf, 0, SEEK_SET);
+						fread(buffer, sizeof(char), sizeof(buffer), lf);
+						char first_char = buffer[TAM_CABECALHO];
+						snprintf(buffer + 21, TAM_CABECALHO - 20, "%s", cabecalho.c_str());
+						buffer[TAM_CABECALHO] = first_char;
+						fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
+						fwrite(buffer, sizeof(char), sizeof(buffer), lf);
+						fflush(lf);
+					}
+
 				}
 				break;
 
@@ -255,8 +266,6 @@ int main() {
 					int buffer_index = -1;
 					bool achou = false;
 					char test_chave[3] = "";
-							fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
-							fread(buffer, sizeof(char), sizeof(buffer), lf);
 
 					string found_chave = "",
 						found_numero_ddd = "",
@@ -272,6 +281,9 @@ int main() {
 						buffer_index++;
 						fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
 						fread(buffer, sizeof(char), sizeof(buffer), lf);
+
+						printf("%d\n", buffer_index);
+						printf("\n\n%s\n\n", buffer);
 
 						int seek_buffer = 0;
 						int max_registros = 5;
