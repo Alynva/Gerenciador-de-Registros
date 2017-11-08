@@ -45,8 +45,8 @@ int busca(string chave) {
 		fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
 		fread(buffer, sizeof(char), sizeof(buffer), lf);
 
-		printf("%d\n", buffer_index);
-		printf("\n\n%s\n\n", buffer);
+		//printf("buffer_index: %d\n", buffer_index);
+		//printf("\n\nbuffer:\n%s\n\n", buffer);
 
 		int seek_buffer = 0;
 		int max_registros;
@@ -63,32 +63,41 @@ int busca(string chave) {
 		} else { // Está noutro bloco, incompleto
 			max_registros = (tot_registros - 4) % 5;
 		}
-		cout << endl << "max " << max_registros << endl;
+		//cout << endl << "max_registros " << max_registros << endl;
 
 		for (int i = 0, registro_index = 0; i < max_registros; i++, registro_index++) {
 			// REABRE POR QUE POR ALGUM MOTIVO A FUNÇÃO SSCANF "ZERA" O BUFFER
+			//cout << "fseek: " << buffer_index * TAM_BLOCK << endl;
 			fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
 			fread(buffer, sizeof(char), sizeof(buffer), lf);
 
-			string pattern = "%*";
-			pattern.append(to_string(seek_buffer + registro_index * TAM_REGISTRO));
-			pattern.append("[^\n]%");
+			//cout << "buffer: " << buffer << endl;
+
+			string pattern;
+			if (seek_buffer + registro_index * TAM_REGISTRO > 0) {
+				pattern = "%*";
+				pattern.append(to_string(seek_buffer + registro_index * TAM_REGISTRO));
+				pattern.append("[^\n]%");
+			} else {
+				pattern = "%";
+			}
 			pattern.append(to_string(TAM_CHAVE));
 			pattern.append("[^\n]");
 
-			
+			//cout << endl << "pattern: " << pattern << endl;
 
-			cout << endl << sscanf(buffer, pattern.c_str(), test_chave) << endl;
+			sscanf(buffer, pattern.c_str(), test_chave);
 
-			cout << endl << test_chave << '\t' << chave << endl;
+			//cout << endl << "test_chave: " << test_chave << "\tchave: " << chave << endl;
 			if (!strcmp(test_chave, chave.c_str())) {
 				pos = buffer_index * TAM_BLOCK + seek_buffer + registro_index * TAM_REGISTRO;
+				//cout << endl << "pos: " << pos << endl;
 
 				achou = true;
 				break;
 			}
 		}
-		cout << "\nfim\n";
+		//cout << "\nfim\n";
 
 	} while (!achou && buffer_index < (n_registros + n_excluidos) / 5);
 
@@ -132,32 +141,35 @@ int main() {
 			case -1: // Sair
 				break;
 			case 0: // Zerar arquivo
+				{
+					pause("zerar o arquivo"); // Confirma a ação com o usuário
 
-				pause("zerar o arquivo"); // Confirma a ação com o usuário
+					lf = freopen("arquivo.bin", "w+b", lf); // Reabre o arquivo em w+ para zerá-lo
+					
+					if(lf == NULL) { // Verifica erros
+						printf("Erro na criaçao do arquivo.\n");
+						return 1;
+					}
 
-				lf = freopen("arquivo.bin", "w+b", lf); // Reabre o arquivo em w+ para zerá-lo
-				
-				if(lf == NULL) { // Verifica erros
-					printf("Erro na criaçao do arquivo.\n");
-					return 1;
+					n_registros = 0; // Zera o contador de registros
+					n_excluidos = 0;
+					
+					buffer_index = 0;
+					for (int i = 0; i < TAM_BLOCK; i++)
+						buffer[i] = ' ';
+
+					cabecalho = "N reg: ";
+					cabecalho.append(to_string((n_registros + n_excluidos)));
+					cabecalho.append("\tN exl: ");
+					cabecalho.append(to_string(n_excluidos));
+					cabecalho.append(TAM_CABECALHO - strlen(cabecalho.c_str()), ' '); // Preenche a string com espaço até dar o tamanho do cabeçalho
+					char first_char = buffer[TAM_CABECALHO];
+					sprintf(buffer, "%s", cabecalho.c_str()); // Imprime o cabeçalho
+					buffer[TAM_CABECALHO] = first_char;
+
+					fwrite(buffer, sizeof(char), sizeof(buffer), lf);
+					fflush(lf); // Força a atualização do arquivo
 				}
-
-				n_registros = 0; // Zera o contador de registros
-				n_excluidos = 0;
-				
-				buffer_index = 0;
-				for (int i = 0; i < TAM_BLOCK; i++)
-					buffer[i] = ' ';
-
-				cabecalho = "N reg: ";
-				cabecalho.append(to_string((n_registros + n_excluidos)));
-				cabecalho.append("\tN exl: ");
-				cabecalho.append(to_string(n_excluidos));
-				cabecalho.append(TAM_CABECALHO - strlen(cabecalho.c_str()), ' '); // Preenche a string com espaço até dar o tamanho do cabeçalho
-				sprintf(buffer, "%s", cabecalho.c_str()); // Imprime o cabeçalho
-
-				fwrite(buffer, sizeof(char), sizeof(buffer), lf);
-				fflush(lf); // Força a atualização do arquivo
 				break;
 			case 1: // Inserir novo registro
 				{ // '{}' necessário para criar um escopo e poder declarar variáveis nele
@@ -217,7 +229,9 @@ int main() {
 
 					// Grava os dados
 					if ((n_registros + n_excluidos) < 4) {
-						char first_char = buffer[(TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO + TAM_REGISTRO) + 1];
+						char first_char = buffer[(TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO + TAM_REGISTRO)];
+						if (first_char == '\0')
+							cout << "\nÉ o \\0\n";
 						snprintf(
 							buffer + (TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO),
 							TAM_CHAVE+1,
@@ -252,7 +266,7 @@ int main() {
 							"%s",
 							nome.c_str()
 						);
-						buffer[(TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO + TAM_REGISTRO) + 1] = first_char;
+						buffer[(TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO + TAM_REGISTRO)] = first_char;
 
 					} else {
 
@@ -361,7 +375,7 @@ int main() {
 							found_email = "",
 							found_nome = "";
 
-						int j = pos;
+						int j = pos - buffer_index * TAM_BLOCK;
 						for (int k = 0; k < TAM_CHAVE; j++, k++) {
 							found_chave.append(to_string(buffer[j]));
 						}
@@ -412,75 +426,27 @@ int main() {
 						cin >> chave;
 					} while (strlen(chave.c_str()) != 3);
 
-					lf = freopen("arquivo.bin", "r+b", lf);
-					
-					if(lf == NULL) { // Verifica erros
-						printf("Erro na abertura do arquivo.\n");
-						return 2;
-					}
-
-					int buffer_index = -1,
-						seek_buffer = 0,
-						registro_index = 0;
-					bool achou = false;
-					char test_chave[3] = "";
-
-					do {
-						buffer_index++;
-
-						seek_buffer = 0;
-						int max_registros = 5;
-						if (buffer_index == 0) {
-							seek_buffer = TAM_CABECALHO;
-							max_registros = 4;
-						}
-
-						if ((n_registros + n_excluidos) / 5 + 1 == 1) {
-							max_registros = (n_registros + n_excluidos);
-						} else if (buffer_index < (n_registros + n_excluidos) / 5 - 1) {
-							max_registros = 5;
-						} else {
-							max_registros = ((n_registros + n_excluidos) % 5) + 1;
-						}
-
-						registro_index = 0;
-						for (int i = 0; i < max_registros; i++, registro_index++) {
-							fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
-							fread(buffer, sizeof(char), sizeof(buffer), lf);
-
-							string pattern = "%*";
-							pattern.append(to_string(seek_buffer + registro_index * TAM_REGISTRO));
-							pattern.append("[^\n]%");
-							pattern.append(to_string(TAM_CHAVE));
-							pattern.append("[^\n]");
-
-							sscanf(buffer, pattern.c_str(), test_chave);
-
-							if (!strcmp(test_chave, chave.c_str())) {
-								achou = true;
-								break;
-							}
-						}
-
-					} while (!achou && buffer_index < (n_registros + n_excluidos) / 5);
+					int pos = busca(chave);
+					bool achou = pos != -1;
 
 					cout << endl;
 
 					if (!achou) {
 						cout << "Não foi encontrado nenhum registro com esta chave." << endl;
 					} else {
+						int buffer_index = pos / TAM_BLOCK;
 
 						--n_registros;
 						
 						fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
 						fread(buffer, sizeof(char), sizeof(buffer), lf);
 
-						int j = seek_buffer + registro_index * TAM_REGISTRO;
+						int j = pos - buffer_index * TAM_BLOCK;
 						for (int k = 0; k < TAM_CHAVE; j++, k++) {
 							buffer[j] = '*';
 						}
 
-
+						// QUANDO APAGA, ELE ESCREVE O BLOCO COMO UM BLOCO NOVO, AO INVÉS DE REESCREVE-LO
 
 						cabecalho = "N reg: ";
 						cabecalho.append(to_string((n_registros + n_excluidos)));

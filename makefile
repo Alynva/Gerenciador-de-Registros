@@ -22,9 +22,9 @@ CC_LINKERS +=
 
 # Arquivo de saída
 ifeq ($(OS),Windows_NT)
-	OUT_FILE = Ger-Reg.exe
+	OUT_FILE = ./Ger-Reg.exe
 else
-	OUT_FILE = Ger-Reg.out
+	OUT_FILE = ./Ger-Reg.out
 endif
 
 all:
