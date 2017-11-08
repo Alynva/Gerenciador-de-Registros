@@ -223,7 +223,6 @@ int main() {
 					cabecalho.append(TAM_CABECALHO - strlen(cabecalho.c_str()), ' ');
 					if (buffer_index == 0) {
 						char first_char = buffer[TAM_CABECALHO];
-						cout << endl << first_char << endl;
 						snprintf(buffer, TAM_CABECALHO + 1, "%s", cabecalho.c_str());
 						buffer[TAM_CABECALHO] = first_char;
 					}
@@ -301,6 +300,7 @@ int main() {
 						}
 
 						for (int i = 0, registro_index = 0; i < max_registros; i++, registro_index++) {
+							// REABRE POR QUE POR ALGUM MOTIVO A FUNÇÃO SSCANF "ZERA" O BUFFER
 							fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
 							fread(buffer, sizeof(char), sizeof(buffer), lf);
 
@@ -433,6 +433,8 @@ int main() {
 					if (!achou) {
 						cout << "Não foi encontrado nenhum registro com esta chave." << endl;
 					} else {
+
+						--n_registros;
 						
 						fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
 						fread(buffer, sizeof(char), sizeof(buffer), lf);
@@ -441,11 +443,34 @@ int main() {
 						for (int k = 0; k < TAM_CHAVE; j++, k++) {
 							buffer[j] = '*';
 						}
+
+
+
+						cabecalho = "Numero de registros: ";
+						cabecalho.append(to_string(n_registros));
+						cabecalho.append(TAM_CABECALHO - strlen(cabecalho.c_str()), ' ');
+						if (buffer_index == 0) {
+							char first_char = buffer[TAM_CABECALHO];
+							snprintf(buffer, TAM_CABECALHO + 1, "%s", cabecalho.c_str());
+							buffer[TAM_CABECALHO] = first_char;
+						}
 						
 						fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
 						fwrite(buffer, sizeof(char), sizeof(buffer), lf);
 
 						fflush(lf);
+
+						if (buffer_index != 0) {
+							fseek(lf, 0, SEEK_SET);
+							fread(buffer, sizeof(char), sizeof(buffer), lf);
+							char first_char = buffer[TAM_CABECALHO];
+							snprintf(buffer, TAM_CABECALHO + 1, "%s", cabecalho.c_str());
+							buffer[TAM_CABECALHO] = first_char;
+							fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
+							fwrite(buffer, sizeof(char), sizeof(buffer), lf);
+							fflush(lf);
+						}
+
 						
 						cout << "O registro foi excluído com sucesso." << endl;
 					}
