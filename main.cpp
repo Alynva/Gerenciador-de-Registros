@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <string.h>
+#include <algorithm>
 #include "clear_console.cpp"
 #include "pause_console_with_message.cpp"
 #include "to_string.cpp"
@@ -20,10 +21,17 @@
 #define TAM_CABECALHO 50
 #define TAM_REGISTRO 100
 
+#define RRN2NBLOCK(rrn) (rrn / TAM_BLOCK)
+#define RRN2REGINBLOCK(rrn) (rrn - RRN2NBLOCK(rrn) * TAM_BLOCK)
+
 using namespace std;
 
 int n_registros = 0,
 	n_excluidos = 0;
+
+int strIsAlpha(const string& s) {
+    return count_if(s.begin(), s.end(), [](unsigned char c){ return isalpha(c); }) == (unsigned int) strlen(s.c_str());
+}
 
 int busca(string chave) {
 	int pos = -1;
@@ -180,14 +188,8 @@ int main() {
 						return 2;
 					}
 
-					buffer_index = ((n_registros + n_excluidos) < 4) ? 0 : ((n_registros + n_excluidos) + 1) / 5;
-					fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
-					int total_read = fread(buffer, sizeof(char), sizeof(buffer), lf);
-					for (unsigned int i = total_read; i < sizeof(buffer); i++)
-						buffer[i] = ' ';
-
 					string chave = "";
-					while (strlen(chave.c_str()) != TAM_CHAVE) { // Pede a chave do registro enquanto a inserida não tiver um comprimento de 3 caracteres
+					while (strlen(chave.c_str()) != TAM_CHAVE || !strIsAlpha(chave)) { // Pede a chave do registro enquanto a inserida não tiver um comprimento de 3 caracteres
 						cout << "Insira a chave para o registro (XXX): ";
 						cin >> chave;
 					}
@@ -228,57 +230,112 @@ int main() {
 					pause("gravar o registro"); // Confirma a ação com o usuário
 
 					// Grava os dados
-					if ((n_registros + n_excluidos) < 4) {
-						char first_char = buffer[(TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO + TAM_REGISTRO)];
-						if (first_char == '\0')
-							cout << "\nÉ o \\0\n";
-						snprintf(
-							buffer + (TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO),
-							TAM_CHAVE+1,
-							"%s",
-							chave.c_str()
-						);
-						snprintf(
-							buffer + (TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO) + TAM_CHAVE,
-							(TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO)+1,
-							"%s%s%s",
-							numero_ddd.c_str(),
-							numero_prefixo.c_str(),
-							numero_sufixo.c_str()
-						);
-						snprintf(
-							buffer + (TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO) + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO),
-							(TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO)+1,
-							"%s%s%s",
-							data_dia.c_str(),
-							data_mes.c_str(),
-							data_ano.c_str()
-						);
-						snprintf(
-							buffer + (TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO) + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO),
-							TAM_EMAIL+1,
-							"%s",
-							email.c_str()
-						);
-						snprintf(
-							buffer + (TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO) + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO) + TAM_EMAIL,
-							TAM_NOME+1,
-							"%s",
-							nome.c_str()
-						);
-						buffer[(TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO + TAM_REGISTRO)] = first_char;
-
+					int pos = -1;
+					if (n_excluidos == 0) {
+						buffer_index = (n_registros < 4) ? 0 : (n_registros + 1) / 5;
 					} else {
+						pos = busca("***");
+						buffer_index = RRN2NBLOCK(pos);
+					}
+					fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
+					int total_read = fread(buffer, sizeof(char), sizeof(buffer), lf);
+					for (unsigned int i = total_read; i < sizeof(buffer); i++)
+						buffer[i] = ' ';
 
-						char first_char = buffer[(((n_registros + n_excluidos) + 1) % 5) * TAM_REGISTRO + TAM_REGISTRO];
+					if (n_excluidos == 0) {
+						if (n_registros < 4) {
+							char first_char = buffer[(TAM_CABECALHO + n_registros * TAM_REGISTRO + TAM_REGISTRO)];
+
+							snprintf(
+								buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO),
+								TAM_CHAVE+1,
+								"%s",
+								chave.c_str()
+							);
+							snprintf(
+								buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO) + TAM_CHAVE,
+								(TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO)+1,
+								"%s%s%s",
+								numero_ddd.c_str(),
+								numero_prefixo.c_str(),
+								numero_sufixo.c_str()
+							);
+							snprintf(
+								buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO) + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO),
+								(TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO)+1,
+								"%s%s%s",
+								data_dia.c_str(),
+								data_mes.c_str(),
+								data_ano.c_str()
+							);
+							snprintf(
+								buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO) + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO),
+								TAM_EMAIL+1,
+								"%s",
+								email.c_str()
+							);
+							snprintf(
+								buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO) + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO) + TAM_EMAIL,
+								TAM_NOME+1,
+								"%s",
+								nome.c_str()
+							);
+
+							buffer[(TAM_CABECALHO + n_registros * TAM_REGISTRO + TAM_REGISTRO)] = first_char;
+
+						} else {
+
+							char first_char = buffer[((n_registros + 1) % 5) * TAM_REGISTRO + TAM_REGISTRO];
+
+							snprintf(
+								buffer + ((n_registros + 1) % 5) * TAM_REGISTRO,
+								TAM_CHAVE+1,
+								"%s",
+								chave.c_str()
+							);
+							snprintf(
+								buffer + ((n_registros + 1) % 5) * TAM_REGISTRO + TAM_CHAVE,
+								(TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO)+1,
+								"%s%s%s",
+								numero_ddd.c_str(),
+								numero_prefixo.c_str(),
+								numero_sufixo.c_str()
+							);
+							snprintf(
+								buffer + ((n_registros + 1) % 5) * TAM_REGISTRO + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO),
+								(TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO)+1,
+								"%s%s%s",
+								data_dia.c_str(),
+								data_mes.c_str(),
+								data_ano.c_str()
+							);
+							snprintf(
+								buffer + ((n_registros + 1) % 5) * TAM_REGISTRO + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO),
+								TAM_EMAIL+1,
+								"%s",
+								email.c_str()
+							);
+							snprintf(
+								buffer + ((n_registros + 1) % 5) * TAM_REGISTRO + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO) + TAM_EMAIL,
+								TAM_NOME+1,
+								"%s",
+								nome.c_str()
+							);
+
+							buffer[((n_registros + 1) % 5) * TAM_REGISTRO + TAM_REGISTRO] = first_char;
+						}
+					} else {
+						int reg_pos = RRN2REGINBLOCK(pos);
+						char first_char = buffer[(reg_pos + TAM_REGISTRO)];
+
 						snprintf(
-							buffer + (((n_registros + n_excluidos) + 1) % 5) * TAM_REGISTRO,
+							buffer + reg_pos,
 							TAM_CHAVE+1,
 							"%s",
 							chave.c_str()
 						);
 						snprintf(
-							buffer + (((n_registros + n_excluidos) + 1) % 5) * TAM_REGISTRO + TAM_CHAVE,
+							buffer + reg_pos + TAM_CHAVE,
 							(TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO)+1,
 							"%s%s%s",
 							numero_ddd.c_str(),
@@ -286,7 +343,7 @@ int main() {
 							numero_sufixo.c_str()
 						);
 						snprintf(
-							buffer + (((n_registros + n_excluidos) + 1) % 5) * TAM_REGISTRO + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO),
+							buffer + reg_pos + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO),
 							(TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO)+1,
 							"%s%s%s",
 							data_dia.c_str(),
@@ -294,22 +351,25 @@ int main() {
 							data_ano.c_str()
 						);
 						snprintf(
-							buffer + (((n_registros + n_excluidos) + 1) % 5) * TAM_REGISTRO + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO),
+							buffer + reg_pos + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO),
 							TAM_EMAIL+1,
 							"%s",
 							email.c_str()
 						);
 						snprintf(
-							buffer + (((n_registros + n_excluidos) + 1) % 5) * TAM_REGISTRO + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO) + TAM_EMAIL,
+							buffer + reg_pos + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO) + TAM_EMAIL,
 							TAM_NOME+1,
 							"%s",
 							nome.c_str()
 						);
-
-						buffer[(((n_registros + n_excluidos) + 1) % 5) * TAM_REGISTRO + TAM_REGISTRO] = first_char;
+						
+						buffer[(reg_pos + TAM_REGISTRO)] = first_char;
 					}
 
-					++n_registros;
+					n_registros++;
+					if (n_excluidos > 0) {
+						n_excluidos--;
+					}
 
 					cabecalho = "N reg: ";
 					cabecalho.append(to_string(n_registros));
@@ -348,7 +408,7 @@ int main() {
 					do {
 						cout << "Insira a chave para ser buscada (XXX): ";
 						cin >> chave;
-					} while (strlen(chave.c_str()) != 3);
+					} while (strlen(chave.c_str()) != 3 || !strIsAlpha(chave));
 
 					int pos = busca(chave);
 					bool achou = pos != -1;
@@ -358,7 +418,8 @@ int main() {
 					if (!achou) {
 						cout << "Não foi encontrado nenhum registro com esta chave." << endl;
 					} else {
-						int buffer_index = pos / TAM_BLOCK;
+						int buffer_index = RRN2NBLOCK(pos);
+						cout << endl << buffer_index << endl;
 
 
 						fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
@@ -375,7 +436,7 @@ int main() {
 							found_email = "",
 							found_nome = "";
 
-						int j = pos - buffer_index * TAM_BLOCK;
+						int j = RRN2REGINBLOCK(pos);
 						for (int k = 0; k < TAM_CHAVE; j++, k++) {
 							found_chave.append(to_string(buffer[j]));
 						}
@@ -424,7 +485,7 @@ int main() {
 					do {
 						cout << "Insira a chave para ser excluída (XXX): ";
 						cin >> chave;
-					} while (strlen(chave.c_str()) != 3);
+					} while (strlen(chave.c_str()) != 3 || !strIsAlpha(chave));
 
 					int pos = busca(chave);
 					bool achou = pos != -1;
@@ -446,8 +507,6 @@ int main() {
 						for (int k = 0; k < TAM_CHAVE; j++, k++) {
 							buffer[j] = '*';
 						}
-
-						// QUANDO APAGA, ELE ESCREVE O BLOCO COMO UM BLOCO NOVO, AO INVÉS DE REESCREVE-LO
 
 						cabecalho = "N reg: ";
 						cabecalho.append(to_string(n_registros));
