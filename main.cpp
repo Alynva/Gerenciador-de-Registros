@@ -218,13 +218,13 @@ int main() {
 
 					++n_registros;
 
-					cabecalho = "";
+					cabecalho = "Numero de registros: ";
 					cabecalho.append(to_string(n_registros));
 					cabecalho.append(TAM_CABECALHO - strlen(cabecalho.c_str()), ' ');
 					if (buffer_index == 0) {
 						char first_char = buffer[TAM_CABECALHO];
 						cout << endl << first_char << endl;
-						snprintf(buffer + 21, TAM_CABECALHO - 20, "%s", cabecalho.c_str());
+						snprintf(buffer, TAM_CABECALHO + 1, "%s", cabecalho.c_str());
 						buffer[TAM_CABECALHO] = first_char;
 					}
 
@@ -238,7 +238,7 @@ int main() {
 						fseek(lf, 0, SEEK_SET);
 						fread(buffer, sizeof(char), sizeof(buffer), lf);
 						char first_char = buffer[TAM_CABECALHO];
-						snprintf(buffer + 21, TAM_CABECALHO - 20, "%s", cabecalho.c_str());
+						snprintf(buffer, TAM_CABECALHO + 1, "%s", cabecalho.c_str());
 						buffer[TAM_CABECALHO] = first_char;
 						fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
 						fwrite(buffer, sizeof(char), sizeof(buffer), lf);
