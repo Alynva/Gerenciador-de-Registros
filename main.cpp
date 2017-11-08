@@ -22,6 +22,79 @@
 
 using namespace std;
 
+int n_registros = 0,
+	n_excluidos = 0;
+
+int busca(string chave) {
+	int pos = -1;
+
+	FILE *lf = fopen("arquivo.bin", "r+b");
+	char buffer[TAM_BLOCK];
+	
+	if(lf == NULL) { // Verifica erros
+		printf("Erro na abertura do arquivo.\n");
+		return 2;
+	}
+
+	int buffer_index = -1;
+	bool achou = false;
+	char test_chave[3] = "";
+
+	do {
+		buffer_index++;
+		fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
+		fread(buffer, sizeof(char), sizeof(buffer), lf);
+
+		printf("%d\n", buffer_index);
+		printf("\n\n%s\n\n", buffer);
+
+		int seek_buffer = 0;
+		int max_registros;
+		if (buffer_index == 0) {
+			seek_buffer = TAM_CABECALHO;
+		}
+
+		int tot_registros = n_registros + n_excluidos;
+
+		if (buffer_index == 0) { // Está no primeiro bloco
+			max_registros = tot_registros > 4 ? 4 : tot_registros;
+		} else if (4 + buffer_index * 5 <= tot_registros) { // Está noutro bloco, completo
+			max_registros = 5;
+		} else { // Está noutro bloco, incompleto
+			max_registros = (tot_registros - 4) % 5;
+		}
+		cout << endl << "max " << max_registros << endl;
+
+		for (int i = 0, registro_index = 0; i < max_registros; i++, registro_index++) {
+			// REABRE POR QUE POR ALGUM MOTIVO A FUNÇÃO SSCANF "ZERA" O BUFFER
+			fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
+			fread(buffer, sizeof(char), sizeof(buffer), lf);
+
+			string pattern = "%*";
+			pattern.append(to_string(seek_buffer + registro_index * TAM_REGISTRO));
+			pattern.append("[^\n]%");
+			pattern.append(to_string(TAM_CHAVE));
+			pattern.append("[^\n]");
+
+			
+
+			cout << endl << sscanf(buffer, pattern.c_str(), test_chave) << endl;
+
+			cout << endl << test_chave << '\t' << chave << endl;
+			if (!strcmp(test_chave, chave.c_str())) {
+				pos = buffer_index * TAM_BLOCK + seek_buffer + registro_index * TAM_REGISTRO;
+
+				achou = true;
+				break;
+			}
+		}
+		cout << "\nfim\n";
+
+	} while (!achou && buffer_index < (n_registros + n_excluidos) / 5);
+
+	return pos;
+}
+
 int main() {
 	
 	FILE *lf;
@@ -38,8 +111,7 @@ int main() {
 	fread(buffer, sizeof(char), sizeof(buffer), lf);
 
 	string cabecalho; // Variável utilizada para escrever o texto do cabeçalho
-	int n_registros = 0;
-	sscanf(buffer, "Numero de registros: %d", &n_registros); // Lê do arquivo o total de registros atual
+	sscanf(buffer, "N reg: %d\tN exl: %d", &n_registros, &n_excluidos); // Lê do arquivo o total de registros atual
 
 	int opcao = 0;
 	do { // Loop para mostrar o menu
@@ -71,13 +143,16 @@ int main() {
 				}
 
 				n_registros = 0; // Zera o contador de registros
+				n_excluidos = 0;
 				
 				buffer_index = 0;
 				for (int i = 0; i < TAM_BLOCK; i++)
 					buffer[i] = ' ';
 
-				cabecalho = "Numero de registros: ";
-				cabecalho.append(to_string(n_registros));
+				cabecalho = "N reg: ";
+				cabecalho.append(to_string((n_registros + n_excluidos)));
+				cabecalho.append("\tN exl: ");
+				cabecalho.append(to_string(n_excluidos));
 				cabecalho.append(TAM_CABECALHO - strlen(cabecalho.c_str()), ' '); // Preenche a string com espaço até dar o tamanho do cabeçalho
 				sprintf(buffer, "%s", cabecalho.c_str()); // Imprime o cabeçalho
 
@@ -93,7 +168,7 @@ int main() {
 						return 2;
 					}
 
-					buffer_index = (n_registros < 4) ? 0 : (n_registros + 1) / 5;
+					buffer_index = ((n_registros + n_excluidos) < 4) ? 0 : ((n_registros + n_excluidos) + 1) / 5;
 					fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
 					int total_read = fread(buffer, sizeof(char), sizeof(buffer), lf);
 					for (unsigned int i = total_read; i < sizeof(buffer); i++)
@@ -141,15 +216,16 @@ int main() {
 					pause("gravar o registro"); // Confirma a ação com o usuário
 
 					// Grava os dados
-					if (n_registros < 4) {
+					if ((n_registros + n_excluidos) < 4) {
+						char first_char = buffer[(TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO + TAM_REGISTRO) + 1];
 						snprintf(
-							buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO),
+							buffer + (TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO),
 							TAM_CHAVE+1,
 							"%s",
 							chave.c_str()
 						);
 						snprintf(
-							buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO) + TAM_CHAVE,
+							buffer + (TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO) + TAM_CHAVE,
 							(TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO)+1,
 							"%s%s%s",
 							numero_ddd.c_str(),
@@ -157,7 +233,7 @@ int main() {
 							numero_sufixo.c_str()
 						);
 						snprintf(
-							buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO) + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO),
+							buffer + (TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO) + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO),
 							(TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO)+1,
 							"%s%s%s",
 							data_dia.c_str(),
@@ -165,28 +241,30 @@ int main() {
 							data_ano.c_str()
 						);
 						snprintf(
-							buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO) + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO),
+							buffer + (TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO) + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO),
 							TAM_EMAIL+1,
 							"%s",
 							email.c_str()
 						);
 						snprintf(
-							buffer + (TAM_CABECALHO + n_registros * TAM_REGISTRO) + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO) + TAM_EMAIL,
+							buffer + (TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO) + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO) + TAM_EMAIL,
 							TAM_NOME+1,
 							"%s",
 							nome.c_str()
 						);
+						buffer[(TAM_CABECALHO + (n_registros + n_excluidos) * TAM_REGISTRO + TAM_REGISTRO) + 1] = first_char;
 
 					} else {
 
+						char first_char = buffer[(((n_registros + n_excluidos) + 1) % 5) * TAM_REGISTRO + TAM_REGISTRO];
 						snprintf(
-							buffer + ((n_registros + 1) % 5) * TAM_REGISTRO,
+							buffer + (((n_registros + n_excluidos) + 1) % 5) * TAM_REGISTRO,
 							TAM_CHAVE+1,
 							"%s",
 							chave.c_str()
 						);
 						snprintf(
-							buffer + ((n_registros + 1) % 5) * TAM_REGISTRO + TAM_CHAVE,
+							buffer + (((n_registros + n_excluidos) + 1) % 5) * TAM_REGISTRO + TAM_CHAVE,
 							(TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO)+1,
 							"%s%s%s",
 							numero_ddd.c_str(),
@@ -194,7 +272,7 @@ int main() {
 							numero_sufixo.c_str()
 						);
 						snprintf(
-							buffer + ((n_registros + 1) % 5) * TAM_REGISTRO + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO),
+							buffer + (((n_registros + n_excluidos) + 1) % 5) * TAM_REGISTRO + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO),
 							(TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO)+1,
 							"%s%s%s",
 							data_dia.c_str(),
@@ -202,24 +280,27 @@ int main() {
 							data_ano.c_str()
 						);
 						snprintf(
-							buffer + ((n_registros + 1) % 5) * TAM_REGISTRO + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO),
+							buffer + (((n_registros + n_excluidos) + 1) % 5) * TAM_REGISTRO + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO),
 							TAM_EMAIL+1,
 							"%s",
 							email.c_str()
 						);
 						snprintf(
-							buffer + ((n_registros + 1) % 5) * TAM_REGISTRO + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO) + TAM_EMAIL,
+							buffer + (((n_registros + n_excluidos) + 1) % 5) * TAM_REGISTRO + TAM_CHAVE + (TAM_NUMERO_DDD + TAM_NUMERO_PREFIXO + TAM_NUMERO_SUFIXO) + (TAM_DATA_DIA + TAM_DATA_MES + TAM_DATA_ANO) + TAM_EMAIL,
 							TAM_NOME+1,
 							"%s",
 							nome.c_str()
 						);
 
+						buffer[(((n_registros + n_excluidos) + 1) % 5) * TAM_REGISTRO + TAM_REGISTRO] = first_char;
 					}
 
 					++n_registros;
 
-					cabecalho = "Numero de registros: ";
-					cabecalho.append(to_string(n_registros));
+					cabecalho = "N reg: ";
+					cabecalho.append(to_string((n_registros + n_excluidos)));
+					cabecalho.append("\tN exl: ");
+					cabecalho.append(to_string(n_excluidos));
 					cabecalho.append(TAM_CABECALHO - strlen(cabecalho.c_str()), ' ');
 					if (buffer_index == 0) {
 						char first_char = buffer[TAM_CABECALHO];
@@ -239,7 +320,7 @@ int main() {
 						char first_char = buffer[TAM_CABECALHO];
 						snprintf(buffer, TAM_CABECALHO + 1, "%s", cabecalho.c_str());
 						buffer[TAM_CABECALHO] = first_char;
-						fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
+						fseek(lf, 0, SEEK_SET);
 						fwrite(buffer, sizeof(char), sizeof(buffer), lf);
 						fflush(lf);
 					}
@@ -255,105 +336,60 @@ int main() {
 						cin >> chave;
 					} while (strlen(chave.c_str()) != 3);
 
-					lf = freopen("arquivo.bin", "r+b", lf);
-					
-					if(lf == NULL) { // Verifica erros
-						printf("Erro na abertura do arquivo.\n");
-						return 2;
-					}
-
-					int buffer_index = -1;
-					bool achou = false;
-					char test_chave[3] = "";
-
-					string found_chave = "",
-						found_numero_ddd = "",
-						found_numero_prefixo = "",
-						found_numero_sufixo = "",
-						found_data_dia = "",
-						found_data_mes = "",
-						found_data_ano = "",
-						found_email = "",
-						found_nome = "";
-
-					do {
-						buffer_index++;
-						fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
-						fread(buffer, sizeof(char), sizeof(buffer), lf);
-
-						printf("%d\n", buffer_index);
-						printf("\n\n%s\n\n", buffer);
-
-						int seek_buffer = 0;
-						int max_registros = 5;
-						if (buffer_index == 0) {
-							seek_buffer = TAM_CABECALHO;
-							max_registros = 4;
-						}
-
-						if (n_registros / 5 + 1 == 1) {
-							max_registros = n_registros;
-						} else if (buffer_index < n_registros / 5 - 1) {
-							max_registros = 5;
-						} else {
-							max_registros = (n_registros % 5) + 1;
-						}
-
-						for (int i = 0, registro_index = 0; i < max_registros; i++, registro_index++) {
-							// REABRE POR QUE POR ALGUM MOTIVO A FUNÇÃO SSCANF "ZERA" O BUFFER
-							fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
-							fread(buffer, sizeof(char), sizeof(buffer), lf);
-
-							string pattern = "%*";
-							pattern.append(to_string(seek_buffer + registro_index * TAM_REGISTRO));
-							pattern.append("[^\n]%");
-							pattern.append(to_string(TAM_CHAVE));
-							pattern.append("[^\n]");
-
-							sscanf(buffer, pattern.c_str(), test_chave);
-
-							if (!strcmp(test_chave, chave.c_str())) {
-								int j = seek_buffer + registro_index * TAM_REGISTRO;
-								for (int k = 0; k < TAM_CHAVE; j++, k++) {
-									found_chave.append(to_string(buffer[j]));
-								}
-								for (int k = 0; k < TAM_NUMERO_DDD; j++, k++) {
-									found_numero_ddd.append(to_string(buffer[j]));
-								}
-								for (int k = 0; k < TAM_NUMERO_PREFIXO; j++, k++) {
-									found_numero_prefixo.append(to_string(buffer[j]));
-								}
-								for (int k = 0; k < TAM_NUMERO_SUFIXO; j++, k++) {
-									found_numero_sufixo.append(to_string(buffer[j]));
-								}
-								for (int k = 0; k < TAM_DATA_DIA; j++, k++) {
-									found_data_dia.append(to_string(buffer[j]));
-								}
-								for (int k = 0; k < TAM_DATA_MES; j++, k++) {
-									found_data_mes.append(to_string(buffer[j]));
-								}
-								for (int k = 0; k < TAM_DATA_ANO; j++, k++) {
-									found_data_ano.append(to_string(buffer[j]));
-								}
-								for (int k = 0; k < TAM_EMAIL; j++, k++) {
-									found_email.append(to_string(buffer[j]));
-								}
-								for (int k = 0; k < TAM_NOME; j++, k++) {
-									found_nome.append(to_string(buffer[j]));
-								}
-
-								achou = true;
-								break;
-							}
-						}
-
-					} while (!achou && buffer_index < n_registros / 5);
+					int pos = busca(chave);
+					bool achou = pos != -1;
 
 					cout << endl;
 
 					if (!achou) {
 						cout << "Não foi encontrado nenhum registro com esta chave." << endl;
 					} else {
+						int buffer_index = pos / TAM_BLOCK;
+
+
+						fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
+						fread(buffer, sizeof(char), sizeof(buffer), lf);
+
+
+						string found_chave = "",
+							found_numero_ddd = "",
+							found_numero_prefixo = "",
+							found_numero_sufixo = "",
+							found_data_dia = "",
+							found_data_mes = "",
+							found_data_ano = "",
+							found_email = "",
+							found_nome = "";
+
+						int j = pos;
+						for (int k = 0; k < TAM_CHAVE; j++, k++) {
+							found_chave.append(to_string(buffer[j]));
+						}
+						for (int k = 0; k < TAM_NUMERO_DDD; j++, k++) {
+							found_numero_ddd.append(to_string(buffer[j]));
+						}
+						for (int k = 0; k < TAM_NUMERO_PREFIXO; j++, k++) {
+							found_numero_prefixo.append(to_string(buffer[j]));
+						}
+						for (int k = 0; k < TAM_NUMERO_SUFIXO; j++, k++) {
+							found_numero_sufixo.append(to_string(buffer[j]));
+						}
+						for (int k = 0; k < TAM_DATA_DIA; j++, k++) {
+							found_data_dia.append(to_string(buffer[j]));
+						}
+						for (int k = 0; k < TAM_DATA_MES; j++, k++) {
+							found_data_mes.append(to_string(buffer[j]));
+						}
+						for (int k = 0; k < TAM_DATA_ANO; j++, k++) {
+							found_data_ano.append(to_string(buffer[j]));
+						}
+						for (int k = 0; k < TAM_EMAIL; j++, k++) {
+							found_email.append(to_string(buffer[j]));
+						}
+						for (int k = 0; k < TAM_NOME; j++, k++) {
+							found_nome.append(to_string(buffer[j]));
+						}
+
 						cout << "A chave foi encontrada! Aqui estão os dados:" << endl << endl;
 						cout << "Chave:\t\t\t" << found_chave << endl;
 						cout << "Telefone:\t\t(" << found_numero_ddd << ") " << found_numero_prefixo << "-" << found_numero_sufixo << endl;
@@ -399,12 +435,12 @@ int main() {
 							max_registros = 4;
 						}
 
-						if (n_registros / 5 + 1 == 1) {
-							max_registros = n_registros;
-						} else if (buffer_index < n_registros / 5 - 1) {
+						if ((n_registros + n_excluidos) / 5 + 1 == 1) {
+							max_registros = (n_registros + n_excluidos);
+						} else if (buffer_index < (n_registros + n_excluidos) / 5 - 1) {
 							max_registros = 5;
 						} else {
-							max_registros = (n_registros % 5) + 1;
+							max_registros = ((n_registros + n_excluidos) % 5) + 1;
 						}
 
 						registro_index = 0;
@@ -426,7 +462,7 @@ int main() {
 							}
 						}
 
-					} while (!achou && buffer_index < n_registros / 5);
+					} while (!achou && buffer_index < (n_registros + n_excluidos) / 5);
 
 					cout << endl;
 
@@ -446,8 +482,10 @@ int main() {
 
 
 
-						cabecalho = "Numero de registros: ";
-						cabecalho.append(to_string(n_registros));
+						cabecalho = "N reg: ";
+						cabecalho.append(to_string((n_registros + n_excluidos)));
+						cabecalho.append("\tN exl: ");
+						cabecalho.append(to_string(n_excluidos));
 						cabecalho.append(TAM_CABECALHO - strlen(cabecalho.c_str()), ' ');
 						if (buffer_index == 0) {
 							char first_char = buffer[TAM_CABECALHO];
