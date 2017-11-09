@@ -511,6 +511,12 @@ void insere(string path, string chave, string numero_ddd, string numero_prefixo,
 		reg_pos = RRN2REGINBLOCK(pos);
 	}
 
+	while (email.length() < TAM_EMAIL)
+		email.append(" ");
+
+	while (nome.length() < TAM_NOME)
+		nome.append(" ");
+
 	char first_char = buffer[(reg_pos + TAM_REGISTRO)];
 
 	snprintf(
