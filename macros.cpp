@@ -21,5 +21,6 @@
 
 #define RRN2NBLOCK(rrn) (rrn / TAM_BLOCK)
 #define RRN2REGINBLOCK(rrn) (rrn - RRN2NBLOCK(rrn) * TAM_BLOCK)
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
 #endif

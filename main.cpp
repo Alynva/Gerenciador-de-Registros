@@ -8,6 +8,7 @@
 #include "to_string.cpp"
 #include "strIsAlpha.cpp"
 #include "strIsInteger.cpp"
+#include "ppAlpha.cpp"
 
 #include "macros.cpp"
 
@@ -265,7 +266,10 @@ int listagem(string path, bool print = true) {
 		found_nome;
 
 	if (print) {
-		cout << "Chave";
+		cout << "Nro";
+		for (int i = 0; (unsigned int) i < (to_string(n_registros).length() > 3 ? to_string(n_registros).length() - 3 : 0); i++)
+			cout << " ";
+		cout << "\tChave";
 		for (int i = 0; i < TAM_CHAVE - 5; i++)
 			cout << " ";
 		cout << "\tNumero";
@@ -283,7 +287,7 @@ int listagem(string path, bool print = true) {
 		cout << endl << endl;
 	}
 
-
+	unsigned int count = 1;
 	do {
 		buffer_index++;
 		//fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
@@ -370,6 +374,12 @@ int listagem(string path, bool print = true) {
 				}
 
 				if (print) {
+					cout << count;
+					for (int j = 0; (unsigned int) j < to_string(n_registros).length() - to_string(count).length(); j++)
+						cout << " ";
+					cout << "\t";
+					count++;
+
 					cout << found_chave << "\t";
 					cout << "(" << found_numero_ddd << ") " << found_numero_prefixo << "-" << found_numero_sufixo << "\t";
 					cout << found_data_dia << "/" << found_data_mes << "/" << found_data_ano << "\t";
@@ -483,7 +493,8 @@ int main() {
 				"\t 2 - Busca por registro\n" \
 				"\t 3 - Remover registro\n" \
 				"\t 4 - Listar todos os registros\n" \
-				"\t 5 - Compactar\n\n");
+				"\t 5 - Compactar\n\n" \
+				"\t99 - Inserir aleatoriamente em lote\n");
 
 		printf("\nDigite o opcao: ");
 		scanf("%d", &opcao);
@@ -499,6 +510,7 @@ int main() {
 					zerar(FILE_NAME);
 				}
 				break;
+
 			case 1: // Inserir novo registro
 				{ // '{}' necessário para criar um escopo e poder declarar variáveis nele
 
@@ -746,8 +758,44 @@ int main() {
 				pause();
 				break;
 
+			case 99: // INSERIR EM LOTE
+				{
+					int count;
+					printf("%d %d - %d %d\n", 'A', 'Z', 'a', 'z');
+					cout << "Insira o numero de registros a serem inseridos: ";
+					cin >> count;
+
+					string string_chave = "aaa",
+						string_numero_ddd = "00",
+						string_numero_prefixo = "00000",
+						string_numero_sufixo = "0000",
+						string_data_dia = "00",
+						string_data_mes = "00",
+						string_data_ano = "0000",
+						string_email = "aaaaa",
+						string_nome = "Aaaa";
+
+					int i = 0;
+					while (i < count) {
+						insere(FILE_NAME, string_chave, string_numero_ddd, string_numero_prefixo, string_numero_sufixo, string_data_dia, string_data_mes, string_data_ano, string_email, string_nome);
+
+						string_chave = ppAlpha(string_chave);
+						string_numero_ddd = ppAlpha(string_numero_ddd);
+						string_numero_prefixo = ppAlpha(string_numero_prefixo);
+						string_numero_sufixo = ppAlpha(string_numero_sufixo);
+						string_data_dia = ppAlpha(string_data_dia);
+						string_data_mes = ppAlpha(string_data_mes);
+						string_data_ano = ppAlpha(string_data_ano);
+						string_email = ppAlpha(string_email);
+						string_nome = ppAlpha(string_nome);
+
+						i++;
+					}
+				}
+				break;
+
 			default:
-				cout << "Opcao inválida." << endl;
+				cout << "Opcao invalida." << endl;
 				pause();
 				break;
 		}
