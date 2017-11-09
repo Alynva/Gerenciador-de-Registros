@@ -469,8 +469,7 @@ void remove(string path, string chave, bool print = true) {
 
 int main() {
 	
-	FILE *lf;
-	lf = fopen(FILE_NAME, "a+b"); // Abre o arquivo, caso exista, ou cria um vazio
+	FILE *lf = fopen(FILE_NAME, "a+b"); // Abre o arquivo, caso exista, ou cria um vazio
 	
 	if(lf == NULL) { // Verifica a ocorrência de erro ao abrir o arquivo
 		printf("Erro na abertura do arquivo.\n");
@@ -761,7 +760,6 @@ int main() {
 			case 99: // INSERIR EM LOTE
 				{
 					int count;
-					printf("%d %d - %d %d\n", 'A', 'Z', 'a', 'z');
 					cout << "Insira o numero de registros a serem inseridos: ";
 					cin >> count;
 
