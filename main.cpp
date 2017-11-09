@@ -6,44 +6,13 @@
 #include "clear_console.cpp"
 #include "pause_console_with_message.cpp"
 #include "to_string.cpp"
+#include "strIsAlpha.cpp"
+#include "strIsInteger.cpp"
 
-#define TAM_CHAVE 3
-#define TAM_NUMERO_DDD 2
-#define TAM_NUMERO_PREFIXO 5
-#define TAM_NUMERO_SUFIXO 4
-#define TAM_NUMERO TAM_NUMERO_DDD+TAM_NUMERO_PREFIXO+TAM_NUMERO_SUFIXO
-#define TAM_DATA_DIA 2
-#define TAM_DATA_MES 2
-#define TAM_DATA_ANO 4
-#define TAM_DATA TAM_DATA_DIA+TAM_DATA_MES+TAM_DATA_ANO
-#define TAM_EMAIL 30
-#define TAM_NOME 48
-
-#define FILE_NAME "arquivo.bin"
-
-#define TAM_BLOCK 512
-#define TAM_CABECALHO 50
-#define TAM_REGISTRO 100
-
-#define RRN2NBLOCK(rrn) (rrn / TAM_BLOCK)
-#define RRN2REGINBLOCK(rrn) (rrn - RRN2NBLOCK(rrn) * TAM_BLOCK)
+#include "macros.cpp"
 
 using namespace std;
 
-//int n_registros = 0,
-//	n_excluidos = 0;
-
-bool strIsAlpha(const string& s) {
-    return (unsigned int) count_if(s.begin(), s.end(), [](unsigned char c){ return isalpha(c); }) == (unsigned int) strlen(s.c_str());
-}
-bool strIsInteger(const std::string & s) {
-   if(s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false;
-
-   char * p;
-   strtol(s.c_str(), &p, 10);
-
-   return (*p == 0);
-}
 void zerar(string path) {
 	FILE *lf = fopen(path.c_str(), "w+b"); // Reabre o arquivo em w+ para zerá-lo
 					
@@ -514,7 +483,7 @@ int main() {
 				"\t 2 - Busca por registro\n" \
 				"\t 3 - Remover registro\n" \
 				"\t 4 - Listar todos os registros\n" \
-				"\t 5 - Compactar");
+				"\t 5 - Compactar\n\n");
 
 		printf("\nDigite o opcao: ");
 		scanf("%d", &opcao);
