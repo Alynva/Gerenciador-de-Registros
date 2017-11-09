@@ -424,7 +424,8 @@ void remove(string path, string chave, bool print = true) {
 	int pos = busca(FILE_NAME, chave);
 	bool achou = pos != -1;
 
-	cout << endl;
+	if (print)
+		cout << endl;
 
 	if (!achou) {
 		if (print)
@@ -483,6 +484,8 @@ void remove(string path, string chave, bool print = true) {
 		if (print)
 			cout << "O registro foi excluido com sucesso." << endl;
 	}
+
+	fclose(lf);
 }
 
 int main() {
@@ -497,10 +500,8 @@ int main() {
 	rewind(lf); // Move o ponteiro de leitura/escrita para o começo do arquivo
 
 	char buffer[TAM_BLOCK];
-	//fread(buffer, sizeof(char), sizeof(buffer), lf);
 
 	string cabecalho; // Variável utilizada para escrever o texto do cabeçalho
-	//sscanf(buffer, "N reg: %d\tN exl: %d", &n_registros, &n_excluidos); // Lê do arquivo o total de registros atual
 
 	int opcao = 0;
 	do { // Loop para mostrar o menu
@@ -720,7 +721,7 @@ int main() {
 						int rrn_first_reg = listagem(FILE_NAME, false);
 
 						while (rrn_first_reg != -1) {
-							fseek(lf, RRN2NBLOCK(rrn_first_reg), SEEK_SET);
+							fseek(lf, RRN2NBLOCK(rrn_first_reg) * TAM_BLOCK, SEEK_SET);
 							fread(buffer, sizeof(char), sizeof(buffer), lf);
 
 							string found_chave = "",
@@ -770,9 +771,10 @@ int main() {
 						}
 
 						rename("_new.bin", FILE_NAME);
+						cout << "Compactacao realizada com sucesso!" << endl << endl;
 					}
 				}
-				pause("Compactacao realizada com sucesso!");
+				pause();
 				break;
 
 			default:
