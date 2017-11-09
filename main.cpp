@@ -461,7 +461,7 @@ void remove(string path, string chave, bool print = true) {
 		}
 
 		if (print)
-			cout << "O registro foi excluido com sucesso." << endl;
+			cout << "O registro foi excluido com sucesso." << endl << endl;
 	}
 
 	fclose(lf);
@@ -493,7 +493,7 @@ int main() {
 				"\t 3 - Remover registro\n" \
 				"\t 4 - Listar todos os registros\n" \
 				"\t 5 - Compactar\n\n" \
-				"\t99 - Inserir aleatoriamente em lote\n");
+				"\t99 - Inserir em lote\n");
 
 		printf("\nDigite o opcao: ");
 		scanf("%d", &opcao);
@@ -554,11 +554,11 @@ int main() {
 					nome.append(TAM_NOME - strlen(nome.c_str()), ' '); // Preenche o restante com espaços
 
 					cout << "\nDados reconhecidos:" << endl;
-					cout << "Chave:\t\t\t" << chave << endl;
-					cout << "Telefone:\t\t(" << numero_ddd << ") " << numero_prefixo << "-" << numero_sufixo << endl;
-					cout << "Data de nascimento:\t" << data_dia << "/" << data_mes << "/" << data_ano << endl;
-					cout << "E-mail:\t\t\t" << email << endl;
-					cout << "Nome:\t\t\t" << nome << endl << endl;
+					cout << "\tChave:\t\t\t" << chave << endl;
+					cout << "\tTelefone:\t\t(" << numero_ddd << ") " << numero_prefixo << "-" << numero_sufixo << endl;
+					cout << "\tData de nascimento:\t" << data_dia << "/" << data_mes << "/" << data_ano << endl;
+					cout << "\tE-mail:\t\t\t" << email << endl;
+					cout << "\tNome:\t\t\t" << nome << endl << endl;
 
 					pause("gravar o registro"); // Confirma a ação com o usuário
 
@@ -632,11 +632,11 @@ int main() {
 						}
 
 						cout << "A chave foi encontrada! Aqui estao os dados:" << endl << endl;
-						cout << "Chave:\t\t\t" << found_chave << endl;
-						cout << "Telefone:\t\t(" << found_numero_ddd << ") " << found_numero_prefixo << "-" << found_numero_sufixo << endl;
-						cout << "Data de nascimento:\t" << found_data_dia << "/" << found_data_mes << "/" << found_data_ano << endl;
-						cout << "E-mail:\t\t\t" << found_email << endl;
-						cout << "Nome:\t\t\t" << found_nome << endl;
+						cout << "\tChave:\t\t\t" << found_chave << endl;
+						cout << "\tTelefone:\t\t(" << found_numero_ddd << ") " << found_numero_prefixo << "-" << found_numero_sufixo << endl;
+						cout << "\tData de nascimento:\t" << found_data_dia << "/" << found_data_mes << "/" << found_data_ano << endl;
+						cout << "\tE-mail:\t\t\t" << found_email << endl;
+						cout << "\tNome:\t\t\t" << found_nome << endl;
 					}
 
 					cout << endl;
@@ -668,8 +668,6 @@ int main() {
 					int n_registros = 0,
 						n_excluidos = 0;
 					sscanf(buffer, "N reg: %d\tN exl: %d", &n_registros, &n_excluidos); // Lê do arquivo o total de registros atual
-
-					cout << endl;
 
 					if (n_registros > 0) {
 						listagem(FILE_NAME);
