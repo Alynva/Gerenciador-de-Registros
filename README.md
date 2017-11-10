@@ -22,7 +22,7 @@ Essa função por sua vez zera o arquivo e escreve o cabeçalho zerado.
 
 ### Inserir registro
 
-O programa solicita ao usuário todas as [informações de um registro](#caracteristicas-dos-registros) e chama a função `insere` passando o nome do arquivo e os dados capturados.
+O programa solicita ao usuário todas as [informações de um registro](#características-dos-registros) e chama a função `insere` passando o nome do arquivo e os dados capturados.
 
 Essa função reabre o arquivo e, baseado na quantidade de registro existentes e logicamente removidos, encontra o posição de inserção do novo registro (caso haja um registro logicamente removido, o novo registro é escrito em sua posição), e reescreve todo o bloco com as novas mudanças, além de reescrever o bloco do cabeçalho atualizando o número de registros. Caso a inserção esteja ocorrendo no bloco do cabeçalho, é feita apenas uma reescrita com os dados atualizados.
 
