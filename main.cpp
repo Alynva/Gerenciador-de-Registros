@@ -21,6 +21,11 @@ int listagem(string, bool = true);
 void remove(string, string, bool = true);
 
 int main() {
+
+	// CORRECAO DE BUGS
+	// As vezes da problema para apagar registros
+	// Geralmente sao registros no final do arquivo
+	// Isso gera problema na compactacao tbm (nao para de adicionar no _new.bin)
 	
 	FILE *lf = fopen(FILE_NAME, "a+b"); // Abre o arquivo, caso exista, ou cria um vazio
 	
