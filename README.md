@@ -85,7 +85,19 @@ No primeiro bloco, o arquivo possui um cabeçalho de tamanho 50 bytes que mostra
 ## Funções utilizadas no programa
 
 - `void zerar(std::string path);`
+  - `path` define em qual arquivo será feita as operações.
 - `int busca(std::string path, std::string chave);`
+  - `path` define em qual arquivo será feita as operações;
+  - `chave` define a chave que será buscada;
+  - O valor retornado representa a posição do registro encontrado no arquivo.
 - `void insere(std::string path, std::string chave, std::string numero_ddd, std::string numero_prefixo, std::string numero_sufixo, std::string data_dia, std::string data_mes, std::string data_ano, std::string email, std::string nome);`
+  - `path` define em qual arquivo será feita as operações;
+  - `chave`, `numero_ddd`, `numero_prefixo`, `numero_sufixo`, `data_dia`, `data_mes`, `data_ano`, `email` e `nome` são os campos do registro a ser inserido.
 - `int listagem(std::string path, bool print = true);`
+  - `path` define em qual arquivo será feita as operações;
+  - `print` define se as informações serão exibidas no terminal;
+  - O valor retornado representa a posição do primeiro registro válido no arquivo.
 - `void remove(std::string path, std::string chave, bool print = true);`
+  - `path` define em qual arquivo será feita as operações;
+  - `chave` define a chave que será buscada e removida;
+  - `print` define se as informações serão exibidas no terminal;
