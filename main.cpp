@@ -22,16 +22,6 @@ int listagem(string, bool = true);
 void remove(string, string, bool = true);
 
 int main(int argc, char** argv) {
-
-	/* 
-		TODO (BUG):
-			Caio F.:
-				As vezes da problema para apagar registros
-				Geralmente sao registros no final do arquivo
-				Isso gera problema na compactacao tbm (nao para de adicionar no _new.bin)
-			Alisson N.:
-				Não consegui replicar no Linux e não encontrei problemas no código
-	*/
 	
 	FILE *lf = fopen(FILE_NAME, "a+b");					// Abre o arquivo, caso exista, ou cria um vazio
 	
