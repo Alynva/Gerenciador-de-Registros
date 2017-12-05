@@ -14,6 +14,7 @@
 #define TAM_NOME 48
 
 #define FILE_NAME "arquivo.bin"
+#define INDICE_FILE_NAME "indice.bin"
 
 #define TAM_BLOCK 512
 #define TAM_CABECALHO 50

@@ -21,15 +21,22 @@ void insere(string, string, string, string, string, string, string, string, stri
 int listagem(string, bool = true);
 void remove(string, string, bool = true);
 
+int buscaIndice(string, string);
+void insereIndice(string, string, int);
+void removeIndice(string, string);
+void compactarIndice(string);
+
 int main(int argc, char** argv) {
 	
 	FILE *lf = fopen(FILE_NAME, "a+b");					// Abre o arquivo, caso exista, ou cria um vazio
+	FILE *li = fopen(INDICE_FILE_NAME, "a+b");			// Faz o mesmo com o arquivo de índice
 	
-	if(lf == NULL) {									// Verifica a ocorrência de erro ao abrir o arquivo
+	if (lf == NULL || li == NULL) {						// Verifica a ocorrência de erro ao abrir o arquivo
 		printf("Erro na abertura do arquivo.\n");
 		return 2;
 	}
 	rewind(lf);											// Move o ponteiro de leitura/escrita para o começo do arquivo
+	rewind(li);
 
 	char buffer[TAM_BLOCK];								// Vetor para guardar os blocos lidos
 	string cabecalho;									// Variável utilizada para escrever o texto do cabeçalho
@@ -61,6 +68,7 @@ int main(int argc, char** argv) {
 					pausa("zerar o arquivo");			// Confirma a ação com o usuário
 
 					zerar(FILE_NAME);
+					zerar(INDICE_FILE_NAME);
 				}
 				break;
 
@@ -137,7 +145,7 @@ int main(int argc, char** argv) {
 						cin >> chave;
 					} while (strlen(chave.c_str()) != 3 || !strIsAlpha(chave));
 
-					int pos = busca(FILE_NAME, chave);						// Encontra o RRN (posição física do registro no arquivo) da chave
+					int pos = buscaIndice(INDICE_FILE_NAME, chave);						// Encontra o RRN (posição física do registro no arquivo) da chave
 					bool achou = pos != -1;
 
 					printf("\n");
@@ -215,6 +223,7 @@ int main(int argc, char** argv) {
 					} while (strlen(chave.c_str()) != 3 || !strIsAlpha(chave));
 
 					remove(FILE_NAME, chave);
+					removeIndice(INDICE_FILE_NAME, chave);
 
 					pausa();
 				}
@@ -535,6 +544,8 @@ void insere(string path, string chave, string numero_ddd, string numero_prefixo,
 		reg_pos = RRN2REGINBLOCK(pos);
 	}
 
+	insereIndice(INDICE_FILE_NAME, chave, reg_pos);
+
 	// Preenche o campo o email e o nome para evitar lixo (e '\0')
 	while (email.length() < TAM_EMAIL)
 		email.append(" ");
@@ -805,7 +816,7 @@ void remove(string path, string chave, bool print) {
 		return;
 	}
 
-	int pos = busca(FILE_NAME, chave);
+	int pos = buscaIndice(INDICE_FILE_NAME, chave);
 	bool achou = pos != -1;
 
 	if (print)
@@ -878,4 +889,18 @@ void remove(string path, string chave, bool print) {
 	}
 
 	fclose(lf);
+}
+
+int buscaIndice(string file, string chave) {
+
+	return -1;
+}
+void insereIndice(string file, string chave, int pos) {
+	compactarIndice(file);
+}
+void removeIndice(string file, string chave) {
+	compactarIndice(file);
+}
+void compactarIndice(string file) {
+
 }
