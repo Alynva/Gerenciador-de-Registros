@@ -23,6 +23,7 @@ void removeReg(string, string, bool = true);
 void zerarIndice(string);
 int buscaIndice(string, string);
 int primeiroIndice(string);
+int chaveMenor(string, string);
 void compactarIndice(string);
 void insereIndice(string, string, int);
 bool removeIndice(string, string);
@@ -1089,6 +1090,88 @@ int primeiroIndice(string file) {
 
 	return rrn_first_ind;
 }
+int chaveMenor(string file, string chave) {
+	int pos = -1;														// Variável que guarda a posição do registro
+
+	FILE *lf = fopen(file.c_str(), "r+b");
+	
+	if(lf == NULL) {													// Verifica erros
+		printf("Erro na abertura do arquivo de indice.\n");
+		return 2;
+	}
+
+	char buffer[TAM_BLOCK];
+
+	fread(buffer, sizeof(char), sizeof(buffer), lf);
+
+	int n_indice = 0,
+		n_excluidos = 0;
+	sscanf(buffer, "N indice: %d\tN exl: %d", &n_indice, &n_excluidos);	// Lê do bloco o total de indices atual
+
+	int buffer_index = -1;												// Número do bloco a ser lido
+
+	char test_chave[3] = "",
+		test_chave_temp[3] = "",
+		test_rrn[8] = "";
+
+	int tot_indices = n_indice + n_excluidos;
+
+	do {
+		buffer_index++;
+
+		// Cálculo do número de indices que há no bloco atual
+		int max_indices;
+		if (buffer_index == 0) {										// Está no primeiro bloco
+			max_indices = tot_indices > (QTD_IND_1O_BLOCO+0) ? (QTD_IND_1O_BLOCO+0) : tot_indices;
+		} else if ((QTD_IND_1O_BLOCO+0) + buffer_index * (QTD_IND_P_BLOCO+0) <= tot_indices) {				// Está noutro bloco, completo
+			max_indices = (QTD_IND_P_BLOCO+0);
+		} else {														// Está noutro bloco, incompleto
+			max_indices = (tot_indices - (QTD_IND_1O_BLOCO+0)) % (QTD_IND_P_BLOCO+0);
+		}
+
+		// Deslocamento a ser realizado caso haja cabeçalho no bloco
+		int seek_buffer = 0;
+		if (buffer_index == 0) {
+			seek_buffer = TAM_CABECALHO;
+		}
+
+		// Varre o bloco lendo todos os registos
+		for (int i = 0, indice_index = 0; i < max_indices; i++, indice_index++) {
+
+			// REABRE A CADA REGISTRO POR QUE POR ALGUM MOTIVO A FUNÇÃO SSCANF "ZERA" O BUFFER
+			fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
+			fread(buffer, sizeof(char), sizeof(buffer), lf);
+			// Formação do padrão usado para obter a chave a partir do bloco. Ex: %*100[^\n]%[^\n] para o segundo registro de um bloco sem cabeçalho
+			string pattern;
+			if (seek_buffer + indice_index * (TAM_INDICE+0) > 0) {
+				pattern = "%*";
+				pattern.append(to_string(seek_buffer + indice_index * (TAM_INDICE+0) - 1));
+				pattern.append("[^\n]%");
+			} else {
+				pattern = "%";
+			}
+
+			if (seek_buffer + indice_index * (TAM_INDICE+0) - 1 > 0) {
+				pattern.append("1[^\n]%3[^\n]%8[^\n]");
+				sscanf(buffer, pattern.c_str(), test_chave_temp, test_chave, test_rrn);				// Lê o a chave no bloco
+			} else {
+				pattern.append("3[^\n]%8[^\n]");
+				sscanf(buffer, pattern.c_str(), test_chave, test_rrn);				// Lê o a chave no bloco
+			}
+
+			// Comparação da chave atual com a chave desejada
+			if (strcmp(test_chave, "***") != 0 && strcmp(test_chave, chave.c_str()) < 0) {
+				pos = buffer_index * TAM_BLOCK + seek_buffer + indice_index * (TAM_INDICE+0);
+				chave = test_chave;
+			}
+		}
+
+	} while (buffer_index < tot_indices / (QTD_IND_P_BLOCO+0));	// Lê outro bloco enquanto não tiver achado ou haverem blocos para serem lidos
+
+	fclose(lf);
+
+	return pos;
+}
 void compactarIndice(string file) {
 	FILE *lf = fopen(file.c_str(), "r+b");
 	char buffer[TAM_BLOCK];
@@ -1120,6 +1203,26 @@ void compactarIndice(string file) {
 		}
 		for (int k = 0; k < 8; j++, k++) {
 			found_reg_pos.append(to_string(buffer[j]));
+		}
+
+		int o_menor = chaveMenor(file, found_chave);
+
+		if (o_menor != -1) {
+			fseek(lf, RRN2NBLOCK(rrn_first_ind) * TAM_BLOCK, SEEK_SET);	// Move o ponteiro de leitura e escrita até o bloco do registro
+			fread(buffer, sizeof(char), sizeof(buffer), lf);			// Lê o bloco todo
+
+			found_chave = "",
+				found_reg_pos = "";
+
+			int j = RRN2REGINBLOCK(o_menor);						// Calcula a posição do registro em relação ao bloco
+
+			// Copia os campos "na unha" pois estava havendo problemas usando sscanf com tantas variáveis
+			for (int k = 0; k < TAM_CHAVE; j++, k++) {
+				found_chave.append(to_string(buffer[j]));
+			}
+			for (int k = 0; k < 8; j++, k++) {
+				found_reg_pos.append(to_string(buffer[j]));
+			}
 		}
 
 		// Insere no novo arquivo o registro encontrado
