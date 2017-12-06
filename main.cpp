@@ -1,4 +1,4 @@
-#include <stdio.h>							// //printf, scanf, sscanf, snprintf, fopen, freopen, fflush, fclose fread, fwrite, fseek, rewind
+#include <stdio.h>							// printf, scanf, sscanf, snprintf, fopen, freopen, fflush, fclose fread, fwrite, fseek, rewind
 #include <iostream>							// std::string, std::cin, std::cout
 #include <string.h>							// std::string.c_str(), std::string.append(), strlen, strcmp, stoi
 #include <errno.h>							// strerror(errno)
@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
 	FILE *lf = fopen(FILE_NAME, "a+b");					// Abre o arquivo, caso exista, ou cria um vazio
 	
 	if (lf == NULL) {						// Verifica a ocorrência de erro ao abrir o arquivo
-		//printf("Erro na abertura do arquivo: %s\n", strerror(errno));
+		printf("Erro na abertura do arquivo: %s\n", strerror(errno));
 		return 2;
 	}
 	rewind(lf);											// Move o ponteiro de leitura/escrita para o começo do arquivo
@@ -55,9 +55,9 @@ int main(int argc, char** argv) {
 
 				"\t99 - Inserir em lote\n");
 
-		//printf("\nDigite o opcao: ");
+		printf("\nDigite o opcao: ");
 		scanf("%d", &opcao);
-		//printf("\n");
+		printf("\n");
 
 		switch (opcao) {
 			case -1:									// SAIR
@@ -148,10 +148,10 @@ int main(int argc, char** argv) {
 					int pos = buscaIndice(INDICE_FILE_NAME, chave);						// Encontra o RRN (posição física do registro no arquivo) da chave
 					bool achou = pos != -1;
 
-					//printf("\n");
+					printf("\n");
 
 					if (!achou) {
-						//printf("Nao foi encontrado nenhum registro com esta chave: %s\n", chave.c_str());
+						printf("Nao foi encontrado nenhum registro com esta chave: %s\n", chave.c_str());
 					} else {
 						int buffer_index = RRN2NBLOCK(pos);					// Calcula o número do bloco que o registro está
 
@@ -199,7 +199,7 @@ int main(int argc, char** argv) {
 							found_nome.append(to_string(buffer[j]));
 						}
 
-						//printf("A chave foi encontrada! Aqui estao os dados:\n\n" \
+						printf("A chave foi encontrada! Aqui estao os dados:\n\n" \
 								"\tChave:\t\t\t%s\n" \
 								"\tTelefone:\t\t(%s) %s-%s\n" \
 								"\tData de nascimento:\t%s/%s/%s\n" \
@@ -207,7 +207,7 @@ int main(int argc, char** argv) {
 								"\tNome:\t\t\t%s\n", found_chave.c_str(), found_numero_ddd.c_str(), found_numero_prefixo.c_str(), found_numero_sufixo.c_str(), found_data_dia.c_str(), found_data_mes.c_str(), found_data_ano.c_str(), found_email.c_str(), found_nome.c_str());
 					}
 
-					//printf("\n");
+					printf("\n");
 
 					pausa();
 				}
@@ -242,14 +242,14 @@ int main(int argc, char** argv) {
 					if (n_registros > 0) {
 						listagem(FILE_NAME);
 					} else {
-						//printf("Nao ha nenhum registro no arquivo.");
+						printf("Nao ha nenhum registro no arquivo.");
 						if (n_excluidos > 0){
-							//printf(" Existe(m) %d registro(s) logicamente removido(s).", n_excluidos);
+							printf(" Existe(m) %d registro(s) logicamente removido(s).", n_excluidos);
 						}
-						//printf("\n");
+						printf("\n");
 					}
 
-					//printf("\n");
+					printf("\n");
 
 					pausa();
 				}
@@ -335,7 +335,7 @@ int main(int argc, char** argv) {
 			case 99: // INSERIR EM LOTE
 				{
 					int count;
-					//printf("Insira o numero de registros a serem inseridos: ");
+					printf("Insira o numero de registros a serem inseridos: ");
 					scanf("%d", &count);
 
 					// Registro inicial
@@ -366,14 +366,14 @@ int main(int argc, char** argv) {
 					}
 					compactarIndice(INDICE_FILE_NAME);
 
-					//printf("\nRegistros inseridos.\n\n");
+					printf("\nRegistros inseridos.\n\n");
 
 					pausa();
 				}
 				break;
 
 			default:
-				//printf("Opcao invalida.\n");
+				printf("Opcao invalida.\n");
 
 				pausa();
 
@@ -391,7 +391,7 @@ void zerar(string path) {
 	FILE *lf = fopen(path.c_str(), "w+b");								// Abre o arquivo em w+ para zerá-lo
 					
 	if(lf == NULL) {													// Verifica erros
-		//printf("Erro na criaçao do arquivo.\n");
+		printf("Erro na criaçao do arquivo.\n");
 		return;
 	}
 	
@@ -427,7 +427,7 @@ int busca(string path, string chave) {
 	FILE *lf = fopen(path.c_str(), "r+b");
 	
 	if(lf == NULL) {													// Verifica erros
-		//printf("Erro na abertura do arquivo.\n");
+		printf("Erro na abertura do arquivo.\n");
 		return 2;
 	}
 
@@ -510,7 +510,7 @@ void insere(string path, string chave, string numero_ddd, string numero_prefixo,
 	fread(buffer, sizeof(char), sizeof(buffer), lf);
 	
 	if(lf == NULL) {													// Verifica erros
-		//printf("Erro na abertura do arquivo.\n");
+		printf("Erro na abertura do arquivo.\n");
 		return;
 	}
 
@@ -644,7 +644,7 @@ int listagem(string path, bool print) {
 	FILE *lf = fopen(path.c_str(), "r+b");
 	
 	if(lf == NULL) {													// Verifica erros
-		//printf("Erro na abertura do arquivo.\n");
+		printf("Erro na abertura do arquivo.\n");
 		return -1;
 	}
 
@@ -670,31 +670,31 @@ int listagem(string path, bool print) {
 
 	// Como outras funções utilizam a listagem para obter a posição do primeiro registro, há um parâmetro para dizer se haverá log de informações ou se só quer obter o valor de retorno
 	if (print) {
-		//printf("Nro");
+		printf("Nro");
 		for (int i = 0; (unsigned int) i < (to_string(n_registros).length() > 3 ? to_string(n_registros).length() - 3 : 0); i++) {
-			//printf(" ");
+			printf(" ");
 		}
-		//printf("\tChave");
+		printf("\tChave");
 		for (int i = 0; i < TAM_CHAVE - 5; i++) {
-			//printf(" ");
+			printf(" ");
 		}
-		//printf("\tNumero");
+		printf("\tNumero");
 		for (int i = 0; i < (TAM_NUMERO + 4) - 6; i++) {
-			//printf(" ");
+			printf(" ");
 		}
-		//printf("\tData");
+		printf("\tData");
 		for (int i = 0; i < (TAM_DATA + 2) - 4; i++) {
-			//printf(" ");
+			printf(" ");
 		}
-		//printf("\tE-mail");
+		printf("\tE-mail");
 		for (int i = 0; i < TAM_EMAIL - 6; i++) {
-			//printf(" ");
+			printf(" ");
 		}
-		//printf("\tNome");
+		printf("\tNome");
 		for (int i = 0; i < TAM_NOME - 4; i++) {
-			//printf(" ");
+			printf(" ");
 		}
-		//printf("\n\n");
+		printf("\n\n");
 	}
 
 	unsigned int count = 1;
@@ -780,18 +780,18 @@ int listagem(string path, bool print) {
 				if (print) {
 
 					// Imprime os dados em forma de tabela
-					//printf("%u", count);
+					printf("%u", count);
 					for (int j = 0; (unsigned int) j < to_string(n_registros).length() - to_string(count).length(); j++)
-						//printf(" ");
-					//printf("\t");
+						printf(" ");
+					printf("\t");
 					count++;
 
-					//printf("%s\t", found_chave.c_str());
-					//printf("(%s) %s-%s\t", found_numero_ddd.c_str(), found_numero_prefixo.c_str(), found_numero_sufixo.c_str());
-					//printf("%s/%s/%s\t", found_data_dia.c_str(), found_data_mes.c_str(), found_data_ano.c_str());
-					//printf("%s\t", found_email.c_str());
-					//printf("%s\t", found_nome.c_str());
-					//printf("\n");
+					printf("%s\t", found_chave.c_str());
+					printf("(%s) %s-%s\t", found_numero_ddd.c_str(), found_numero_prefixo.c_str(), found_numero_sufixo.c_str());
+					printf("%s/%s/%s\t", found_data_dia.c_str(), found_data_mes.c_str(), found_data_ano.c_str());
+					printf("%s\t", found_email.c_str());
+					printf("%s\t", found_nome.c_str());
+					printf("\n");
 				}
 			}
 
@@ -808,7 +808,7 @@ void removeReg(string path, string chave, bool print) {
 	FILE *lf = fopen(path.c_str(), "r+b");
 	
 	if(lf == NULL) {													// Verifica erros
-		//printf("Erro na abertura do arquivo.\n");
+		printf("Erro na abertura do arquivo.\n");
 		return;
 	}
 
@@ -816,10 +816,10 @@ void removeReg(string path, string chave, bool print) {
 	bool achou = pos != -1;
 
 	if (print)
-		//printf("\n");;
+		printf("\n");;
 
 	if (!achou && print) {
-			//printf("Nao foi encontrado nenhum registro com esta chave.\n");
+			printf("Nao foi encontrado nenhum registro com esta chave.\n");
 	} else {
 		int buffer_index = RRN2NBLOCK(pos);
 		
@@ -881,7 +881,7 @@ void removeReg(string path, string chave, bool print) {
 		}
 
 		if (print) {
-			//printf("O registro foi excluido com sucesso.\n");
+			printf("O registro foi excluido com sucesso.\n");
 		}
 	}
 
@@ -892,7 +892,7 @@ void zerarIndice(string path) {
 	FILE *lf = fopen(path.c_str(), "w+b");								// Abre o arquivo em w+ para zerá-lo
 					
 	if(lf == NULL) {													// Verifica erros
-		//printf("Erro na criaçao do arquivo de indice.\n");
+		printf("Erro na criaçao do arquivo de indice.\n");
 		return;
 	}
 	
@@ -928,7 +928,7 @@ int buscaIndice(string file, string chave) {
 	FILE *lf = fopen(file.c_str(), "r+b");
 	
 	if(lf == NULL) {													// Verifica erros
-		//printf("Erro na abertura do arquivo de indice.\n");
+		printf("Erro na abertura do arquivo de indice.\n");
 		return 2;
 	}
 
@@ -1012,7 +1012,7 @@ int primeiroIndice(string file) {
 	FILE *lf = fopen(file.c_str(), "r+b");
 	
 	if(lf == NULL) {													// Verifica erros
-		//printf("Erro na abertura do arquivo de indice.\n");
+		printf("Erro na abertura do arquivo de indice.\n");
 		return -1;
 	}
 
@@ -1135,7 +1135,7 @@ void compactarIndice(string file) {
 	fclose(lf);
 
 	if (remove(INDICE_FILE_NAME) != 0) {
-		//printf("Erro ao excluir o arquivo de indices: %s\n", strerror(errno));
+		printf("Erro ao excluir o arquivo de indices: %s\n", strerror(errno));
 	}
 
 	if (rename("_new_indice.bin", INDICE_FILE_NAME) == 0) {									// Renomeia o novo arquivo para sobrescrever o arquivo de dados
@@ -1154,7 +1154,7 @@ void insereIndice(string file, string chave, int reg_pos) {
 	fread(buffer, sizeof(char), sizeof(buffer), lf);
 	
 	if(lf == NULL) {													// Verifica erros
-		//printf("Erro na abertura do arquivo de indice.\n");
+		printf("Erro na abertura do arquivo de indice.\n");
 		return;
 	}
 
@@ -1263,7 +1263,7 @@ bool removeIndice(string file, string chave) {
 	FILE *lf = fopen(file.c_str(), "r+b");
 	
 	if(lf == NULL) {													// Verifica erros
-		//printf("Erro na abertura do arquivo de indice (%s).\n", file.c_str());
+		printf("Erro na abertura do arquivo de indice (%s).\n", file.c_str());
 		return false;
 	}
 
