@@ -46,15 +46,15 @@ int main(int argc, char** argv) {
 		system(CLEAR);
 
 		printf("Menu:\n" \
-				"\t-1 - \033[4mS\033[24mair\n" \
-				"\t 0 - \033[4mZ\033[24merar arquivo\n" \
-				"\t 1 - \033[4mI\033[24mnserir novo registro\n" \
-				"\t 2 - \033[4mB\033[24musca por registro\n" \
-				"\t 3 - \033[4mR\033[24memover registro\n" \
-				"\t 4 - \033[4mL\033[24mistar todos os registros\n" \
-				"\t 5 - \033[4mC\033[24mompactar\n\n" \
+				"\t-1 - Sair\n" \
+				"\t 0 - Zerar arquivo\n" \
+				"\t 1 - Inserir novo registro\n" \
+				"\t 2 - Busca por registro\n" \
+				"\t 3 - Remover registro\n" \
+				"\t 4 - Listar todos os registros\n" \
+				"\t 5 - Compactar\n\n" \
 
-				"\t99 - I\033[4mn\033[24mserir em lote\n");
+				"\t99 - Inserir em lote\n");
 
 		printf("\nDigite o opcao: ");
 		scanf("%d", &opcao);
