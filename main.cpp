@@ -452,11 +452,11 @@ int busca(string path, string chave) {
 		// Cálculo do número de registros que há no bloco atual
 		int max_registros;
 		if (buffer_index == 0) {										// Está no primeiro bloco
-			max_registros = tot_registros > 4 ? 4 : tot_registros;
-		} else if (4 + buffer_index * 5 <= tot_registros) {				// Está noutro bloco, completo
-			max_registros = 5;
+			max_registros = tot_registros > (QTD_REG_1O_BLOCO+0) ? (QTD_REG_1O_BLOCO+0) : tot_registros;
+		} else if ((QTD_REG_1O_BLOCO+0) + buffer_index * (QTD_REG_P_BLOCO+0) <= tot_registros) {				// Está noutro bloco, completo
+			max_registros = (QTD_REG_P_BLOCO+0);
 		} else {														// Está noutro bloco, incompleto
-			max_registros = (tot_registros - 4) % 5;
+			max_registros = (tot_registros - (QTD_REG_1O_BLOCO+0)) % (QTD_REG_P_BLOCO+0);
 		}
 
 		// Deslocamento a ser realizado caso haja cabeçalho no bloco
@@ -495,7 +495,7 @@ int busca(string path, string chave) {
 			}
 		}
 
-	} while (!achou && buffer_index < (n_registros + n_excluidos) / 5);	// Lê outro bloco enquanto não tiver achado ou haverem blocos para serem lidos
+	} while (!achou && buffer_index < (n_registros + n_excluidos) / (QTD_REG_P_BLOCO+0));	// Lê outro bloco enquanto não tiver achado ou haverem blocos para serem lidos
 
 	fclose(lf);
 
@@ -522,7 +522,7 @@ void insere(string path, string chave, string numero_ddd, string numero_prefixo,
 	int pos = -1;														// Posição que deve ser inserido
 	// Verifica se existe registro excluído
 	if (n_excluidos == 0) {
-		buffer_index = (n_registros < 4) ? 0 : (n_registros + 1) / 5;
+		buffer_index = (n_registros < (QTD_REG_1O_BLOCO+0)) ? 0 : (n_registros + 1) / (QTD_REG_P_BLOCO+0);
 	} else {
 		pos = busca(path.c_str(), "***");
 		buffer_index = RRN2NBLOCK(pos);
@@ -537,16 +537,15 @@ void insere(string path, string chave, string numero_ddd, string numero_prefixo,
 
 	int reg_pos;														// Posição do registro em relação ao bloco
 	if (n_excluidos == 0) {
-		if (n_registros < 4) {
+		if (n_registros < (QTD_REG_1O_BLOCO+0)) {
 			reg_pos = TAM_CABECALHO + n_registros * TAM_REGISTRO;		// Fim do primeiro bloco
 		} else {
-			reg_pos = ((n_registros + 1) % 5) * TAM_REGISTRO;			// Fim do último bloco
+			reg_pos = ((n_registros + 1) % (QTD_REG_P_BLOCO+0)) * TAM_REGISTRO;			// Fim do último bloco
 		}
 	} else {
 		reg_pos = RRN2REGINBLOCK(pos);
 	}
-
-	insereIndice(INDICE_FILE_NAME, chave, reg_pos);
+	insereIndice(INDICE_FILE_NAME, chave, buffer_index * TAM_BLOCK + reg_pos);
 
 	// Preenche o campo o email e o nome para evitar lixo (e '\0')
 	while (email.length() < TAM_EMAIL)
@@ -704,11 +703,11 @@ int listagem(string path, bool print) {
 		int tot_registros = n_registros + n_excluidos;
 		int max_registros;												// Número de registros no bloco
 		if (buffer_index == 0) {										// Está no primeiro bloco
-			max_registros = tot_registros > 4 ? 4 : tot_registros;
-		} else if (4 + buffer_index * 5 <= tot_registros) {				// Está noutro bloco, completo
-			max_registros = 5;
+			max_registros = tot_registros > (QTD_REG_1O_BLOCO+0) ? (QTD_REG_1O_BLOCO+0) : tot_registros;
+		} else if ((QTD_REG_1O_BLOCO+0) + buffer_index * (QTD_REG_P_BLOCO+0) <= tot_registros) {				// Está noutro bloco, completo
+			max_registros = (QTD_REG_P_BLOCO+0);
 		} else {														// Está noutro bloco, incompleto
-			max_registros = (tot_registros - 4) % 5;
+			max_registros = (tot_registros - (QTD_REG_1O_BLOCO+0)) % (QTD_REG_P_BLOCO+0);
 		}
 
 		for (int i = 0, registro_index = 0; i < max_registros; i++, registro_index++) {
@@ -791,7 +790,7 @@ int listagem(string path, bool print) {
 
 		}
 
-	} while (buffer_index < (n_registros + n_excluidos) / 5);	// Enquanto não tiver terminado de ler todos os blocos
+	} while (buffer_index < (n_registros + n_excluidos) / (QTD_REG_P_BLOCO+0));	// Enquanto não tiver terminado de ler todos os blocos
 
 	fclose(lf);
 
@@ -931,7 +930,7 @@ int buscaIndice(string file, string chave) {
 
 	int n_indice = 0,
 		n_excluidos = 0;
-	sscanf(buffer, "N indice: %d\tN exl: %d", &n_indice, &n_excluidos);	// Lê do bloco o total de registros atual
+	sscanf(buffer, "N indice: %d\tN exl: %d", &n_indice, &n_excluidos);	// Lê do bloco o total de indices atual
 
 	int buffer_index = -1;												// Número do bloco a ser lido
 	bool achou = false;
@@ -939,19 +938,19 @@ int buscaIndice(string file, string chave) {
 		test_chave_temp[3] = "",
 		test_rrn[8] = "";
 
+	int tot_indices = n_indice + n_excluidos;
+
 	do {
 		buffer_index++;
 
-		int tot_indices = n_indice + n_excluidos;
-
-		// Cálculo do número de registros que há no bloco atual
+		// Cálculo do número de indices que há no bloco atual
 		int max_indices;
 		if (buffer_index == 0) {										// Está no primeiro bloco
-			max_indices = tot_indices > 4 ? 4 : tot_indices;
-		} else if (4 + buffer_index * 5 <= tot_indices) {				// Está noutro bloco, completo
-			max_indices = 5;
+			max_indices = tot_indices > (QTD_IND_1O_BLOCO+0) ? (QTD_IND_1O_BLOCO+0) : tot_indices;
+		} else if ((QTD_IND_1O_BLOCO+0) + buffer_index * (QTD_IND_P_BLOCO+0) <= tot_indices) {				// Está noutro bloco, completo
+			max_indices = (QTD_IND_P_BLOCO+0);
 		} else {														// Está noutro bloco, incompleto
-			max_indices = (tot_indices - 4) % 5;
+			max_indices = (tot_indices - (QTD_IND_1O_BLOCO+0)) % (QTD_IND_P_BLOCO+0);
 		}
 
 		// Deslocamento a ser realizado caso haja cabeçalho no bloco
@@ -966,7 +965,6 @@ int buscaIndice(string file, string chave) {
 			// REABRE A CADA REGISTRO POR QUE POR ALGUM MOTIVO A FUNÇÃO SSCANF "ZERA" O BUFFER
 			fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
 			fread(buffer, sizeof(char), sizeof(buffer), lf);
-
 			// Formação do padrão usado para obter a chave a partir do bloco. Ex: %*100[^\n]%[^\n] para o segundo registro de um bloco sem cabeçalho
 			string pattern;
 			if (seek_buffer + indice_index * (TAM_INDICE+0) > 0) {
@@ -976,9 +974,14 @@ int buscaIndice(string file, string chave) {
 			} else {
 				pattern = "%";
 			}
-			pattern.append("1[^\n]%3[^\n]%8[^\n]");
 
-			sscanf(buffer, pattern.c_str(), test_chave_temp, test_chave, test_rrn);				// Lê o a chave no bloco
+			if (seek_buffer + indice_index * (TAM_INDICE+0) - 1 > 0) {
+				pattern.append("1[^\n]%3[^\n]%8[^\n]");
+				sscanf(buffer, pattern.c_str(), test_chave_temp, test_chave, test_rrn);				// Lê o a chave no bloco
+			} else {
+				pattern.append("3[^\n]%8[^\n]");
+				sscanf(buffer, pattern.c_str(), test_chave, test_rrn);				// Lê o a chave no bloco
+			}
 
 			// Comparação da chave atual com a chave desejada
 			if (!strcmp(test_chave, chave.c_str())) {
@@ -989,7 +992,7 @@ int buscaIndice(string file, string chave) {
 			}
 		}
 
-	} while (!achou && buffer_index < (n_indice + n_excluidos) / 5);	// Lê outro bloco enquanto não tiver achado ou haverem blocos para serem lidos
+	} while (!achou && buffer_index < tot_indices / (QTD_IND_P_BLOCO+0));	// Lê outro bloco enquanto não tiver achado ou haverem blocos para serem lidos
 
 	fclose(lf);
 
@@ -1030,11 +1033,11 @@ int primeiroIndice(string file) {
 		int tot_indices = n_indice + n_excluidos;
 		int max_indices;												// Número de registros no bloco
 		if (buffer_index == 0) {										// Está no primeiro bloco
-			max_indices = tot_indices > 4 ? 4 : tot_indices;
-		} else if (4 + buffer_index * 5 <= tot_indices) {				// Está noutro bloco, completo
-			max_indices = 5;
+			max_indices = tot_indices > (QTD_IND_1O_BLOCO+0) ? (QTD_IND_1O_BLOCO+0) : tot_indices;
+		} else if ((QTD_IND_1O_BLOCO+0) + buffer_index * (QTD_IND_P_BLOCO+0) <= tot_indices) {				// Está noutro bloco, completo
+			max_indices = (QTD_IND_P_BLOCO+0);
 		} else {														// Está noutro bloco, incompleto
-			max_indices = (tot_indices - 4) % 5;
+			max_indices = (tot_indices - (QTD_IND_1O_BLOCO+0)) % (QTD_IND_P_BLOCO+0);
 		}
 
 		for (int i = 0, indice_index = 0; i < max_indices; i++, indice_index++) {
@@ -1066,7 +1069,7 @@ int primeiroIndice(string file) {
 
 		}
 
-	} while (buffer_index < (n_indice + n_excluidos) / 5 && rrn_first_ind == -1);	// Enquanto não tiver terminado de ler todos os blocos
+	} while (buffer_index < (n_indice + n_excluidos) / (QTD_IND_P_BLOCO+0) && rrn_first_ind == -1);	// Enquanto não tiver terminado de ler todos os blocos
 
 	fclose(lf);
 
@@ -1124,7 +1127,6 @@ void compactarIndice(string file) {
 
 	if (remove(INDICE_FILE_NAME) != 0)
 		printf("Erro ao excluir o arquivo de indices: %s\n", strerror(errno));
-	pausa();
 
 	if (rename("_new_indice.bin", INDICE_FILE_NAME) == 0)									// Renomeia o novo arquivo para sobrescrever o arquivo de dados
 		printf("Arquivo temporario _new_indice.bin renomeado para %s.\n", INDICE_FILE_NAME);
@@ -1153,7 +1155,7 @@ void insereIndice(string file, string chave, int reg_pos) {
 	int buffer_index = 0;												// Número do bloco para inserir o registro
 	int pos = -1;
 	if (n_excluidos == 0)
-		buffer_index = (n_indice < 4) ? 0 : (n_indice + 1) / 5;
+		buffer_index = (n_indice < (QTD_IND_1O_BLOCO+0)) ? 0 : (n_indice + (QTD_IND_P_BLOCO - QTD_IND_1O_BLOCO)) / (QTD_IND_P_BLOCO+0);
 	else {
 		pos = busca(file.c_str(), "***");
 		buffer_index = RRN2NBLOCK(pos);
@@ -1168,10 +1170,10 @@ void insereIndice(string file, string chave, int reg_pos) {
 
 	int ind_pos = 0;														// Posição do registro em relação ao bloco
 	if (n_excluidos == 0) {
-		if (n_indice < 4) {
-			ind_pos = TAM_CABECALHO + n_indice * (TAM_INDICE+1-1);		// Fim do primeiro bloco
+		if (n_indice < (QTD_IND_1O_BLOCO+0)) {
+			ind_pos = TAM_CABECALHO + n_indice * (TAM_INDICE+0);		// Fim do primeiro bloco
 		} else {
-			ind_pos = ((n_indice + 1) % 5) * (TAM_INDICE+0);			// Fim do último bloco
+			ind_pos = ((n_indice + (QTD_IND_P_BLOCO - QTD_IND_1O_BLOCO)) % (QTD_IND_P_BLOCO+0)) * (TAM_INDICE+0);			// Fim do último bloco
 		}
 	} else
 		ind_pos = RRN2REGINBLOCK(pos);
@@ -1241,7 +1243,7 @@ void insereIndice(string file, string chave, int reg_pos) {
 		fflush(lf);
 	}
 
-	printf("O indice da chave %s foi inserido com sucesso no arquivo %s.\n", chave.c_str(), file.c_str());
+	printf("O indice da chave %s foi inserido com sucesso no arquivo %s com valor %d.\n", chave.c_str(), file.c_str(), stoi(str_reg_pos.c_str()));
 
 	fclose(lf);
 }
