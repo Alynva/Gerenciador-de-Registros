@@ -19,6 +19,7 @@
 #define TAM_BLOCK 512
 #define TAM_CABECALHO 50
 #define TAM_REGISTRO 100
+#define TAM_INDICE (TAM_CHAVE+8)
 
 #define RRN2NBLOCK(rrn) (rrn / TAM_BLOCK)
 #define RRN2REGINBLOCK(rrn) (rrn - RRN2NBLOCK(rrn) * TAM_BLOCK)
