@@ -121,6 +121,8 @@ No primeiro bloco, o arquivo possui um cabeçalho de tamanho 50 bytes que mostra
   - `chave` define a chave que será buscada e removida;
   - `print` define se as informações serão exibidas no terminal;
 
+---
+
 - `void zerarIndice(string path);`
   - `path` define em qual arquivo será feita as operações;
 - `int buscaIndice(string file, string chave);`
