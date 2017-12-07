@@ -58,7 +58,7 @@ Após o fim do processo, renomeia o novo arquivo com o nome do arquivo de dados.
 
 ### Inserir em lote
 
-Essa opção solicita ao usuário o número de registros a serem inseridos e, então, chama a função `insere` com dados gerados automaticamente.
+Essa opção pergunta ao usuário se ele deseja obter os dados de um arquivo o .csv ou que o programa gere eles sequencialmente. Selecionado a opção de arquivo, o usuário deve inserir o caminho do arquivo que contém os dados compatíveis com o programa (campos delimitados por espaço em branco). Ao selecionado a opção de gerar sequencialmente, o programa solicita o número de registros a serem inseridos e, então, chama a função `insere` com dados gerados automaticamente.
 
 ## O arquivo de dados
 
