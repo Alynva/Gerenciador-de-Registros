@@ -108,15 +108,38 @@ No primeiro bloco, o arquivo possui um cabeçalho de tamanho 50 bytes que mostra
 - `int busca(std::string path, std::string chave);`
   - `path` define em qual arquivo será feita as operações;
   - `chave` define a chave que será buscada;
-  - O valor retornado representa a posição do registro encontrado no arquivo.
+  - O valor retornado representa a posição do registro encontrado no arquivo (-1 representa que o registro não foi encontrado).
 - `void insere(std::string path, std::string chave, std::string numero_ddd, std::string numero_prefixo, std::string numero_sufixo, std::string data_dia, std::string data_mes, std::string data_ano, std::string email, std::string nome);`
   - `path` define em qual arquivo será feita as operações;
   - `chave`, `numero_ddd`, `numero_prefixo`, `numero_sufixo`, `data_dia`, `data_mes`, `data_ano`, `email` e `nome` são os campos do registro a ser inserido.
 - `int listagem(std::string path, bool print = true);`
   - `path` define em qual arquivo será feita as operações;
   - `print` define se as informações serão exibidas no terminal;
-  - O valor retornado representa a posição do primeiro registro válido no arquivo.
-- `void remove(std::string path, std::string chave, bool print = true);`
+  - O valor retornado representa a posição do primeiro registro válido no arquivo (-1 representa que o registro não foi encontrado).
+- `void removeReg(std::string path, std::string chave, bool print = true);`
   - `path` define em qual arquivo será feita as operações;
   - `chave` define a chave que será buscada e removida;
   - `print` define se as informações serão exibidas no terminal;
+
+- `void zerarIndice(string path);`
+  - `path` define em qual arquivo será feita as operações;
+- `int buscaIndice(string file, string chave);`
+  - `file` define em qual arquivo será feita as operações;
+  - `chave` define a chave que será buscada;
+  - O valor retornado representa a posição do índice encontrado no arquivo (-1 representa que o índice não foi encontrado).
+- `int primeiroIndice(string file);`
+  - `file` define em qual arquivo será feita as operações;
+  - O valor retornado representa a posição do primeiro índice válido no arquivo (-1 representa que o índice não foi encontrado).
+- `int chaveMenor(string file, string chave);`
+  - `file` define em qual arquivo será feita as operações;
+  - `chave` define a chave que será buscada;
+  - O valor retornado representa a posição do índice que é alfabeticamente menor do que o índice buscado (-1 representa que não há um índice menor).
+- `void compactarIndice(string file);`
+  - `file` define em qual arquivo será feita as operações;
+- `void insereIndice(string file, string chave, int reg_pos);`
+  - `file` define em qual arquivo será feita as operações;
+  - `chave` define a chave do registro a ser inserido no índice;
+  - `reg_pos` define a posição do registro a qual o índice se refere.
+- `bool removeIndice(string, string);`
+  - `file` define em qual arquivo será feita as operações;
+  - `chave` define a chave do registro a ser excluído do índice;
