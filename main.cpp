@@ -391,7 +391,7 @@ void zerar(string path) {
 	FILE *lf = fopen(path.c_str(), "w+b");								// Abre o arquivo em w+ para zerá-lo
 					
 	if(lf == NULL) {													// Verifica erros
-		printf("Erro na criaçao do arquivo.\n");
+		printf("Erro na criaçao do arquivo: %s\n", strerror(errno));
 		return;
 	}
 	
@@ -429,7 +429,7 @@ int busca(string path, string chave) {
 		FILE *lf = fopen(INDICE_FILE_NAME, "r+b");
 		
 		if(lf == NULL) {													// Verifica erros
-			printf("Erro na abertura do arquivo de indice.\n");
+			printf("Erro na abertura do arquivo de indice: %s\n", strerror(errno));
 			return 2;
 		}
 
@@ -469,7 +469,7 @@ void insere(string path, string chave, string numero_ddd, string numero_prefixo,
 	fread(buffer, sizeof(char), sizeof(buffer), lf);
 	
 	if(lf == NULL) {													// Verifica erros
-		printf("Erro na abertura do arquivo.\n");
+		printf("Erro na abertura do arquivo: %s\n", strerror(errno));
 		return;
 	}
 
@@ -603,7 +603,7 @@ int listagem(string path, bool print) {
 	FILE *lf = fopen(path.c_str(), "r+b");
 	
 	if(lf == NULL) {													// Verifica erros
-		printf("Erro na abertura do arquivo.\n");
+		printf("Erro na abertura do arquivo: %s\n", strerror(errno));
 		return -1;
 	}
 
@@ -767,7 +767,7 @@ void removeReg(string path, string chave, bool print) {
 	FILE *lf = fopen(path.c_str(), "r+b");
 	
 	if(lf == NULL) {													// Verifica erros
-		printf("Erro na abertura do arquivo.\n");
+		printf("Erro na abertura do arquivo: %s\n", strerror(errno));
 		return;
 	}
 
@@ -844,6 +844,7 @@ void removeReg(string path, string chave, bool print) {
 		}
 		
 		removeIndice(INDICE_FILE_NAME, chave);
+		compactarIndice(INDICE_FILE_NAME);
 	}
 
 	fclose(lf);
@@ -853,7 +854,7 @@ void zerarIndice(string path) {
 	FILE *lf = fopen(path.c_str(), "w+b");								// Abre o arquivo em w+ para zerá-lo
 					
 	if(lf == NULL) {													// Verifica erros
-		printf("Erro na criaçao do arquivo de indice.\n");
+		printf("Erro na criaçao do arquivo de indice: %s\n", strerror(errno));
 		return;
 	}
 	
@@ -889,7 +890,7 @@ int buscaIndice(string file, string chave) {
 	FILE *lf = fopen(file.c_str(), "r+b");
 	
 	if(lf == NULL) {													// Verifica erros
-		printf("Erro na abertura do arquivo de indice.\n");
+		printf("Erro na abertura do arquivo de indice: %s\n", strerror(errno));
 		return 2;
 	}
 
@@ -973,7 +974,7 @@ int primeiroIndice(string file) {
 	FILE *lf = fopen(file.c_str(), "r+b");
 	
 	if(lf == NULL) {													// Verifica erros
-		printf("Erro na abertura do arquivo de indice.\n");
+		printf("Erro na abertura do arquivo de indice: %s\n", strerror(errno));
 		return -1;
 	}
 
@@ -1056,7 +1057,7 @@ int chaveMenor(string file, string chave) {
 	FILE *lf = fopen(file.c_str(), "r+b");
 	
 	if(lf == NULL) {													// Verifica erros
-		printf("Erro na abertura do arquivo de indice.\n");
+		printf("Erro na abertura do arquivo de indice: %s\n", strerror(errno));
 		return 2;
 	}
 
@@ -1217,7 +1218,7 @@ void insereIndice(string file, string chave, int reg_pos) {
 	fread(buffer, sizeof(char), sizeof(buffer), lf);
 	
 	if(lf == NULL) {													// Verifica erros
-		printf("Erro na abertura do arquivo de indice.\n");
+		printf("Erro na abertura do arquivo de indice: %s\n", strerror(errno));
 		return;
 	}
 
@@ -1326,7 +1327,7 @@ bool removeIndice(string file, string chave) {
 	FILE *lf = fopen(file.c_str(), "r+b");
 	
 	if(lf == NULL) {													// Verifica erros
-		printf("Erro na abertura do arquivo de indice (%s).\n", file.c_str());
+		printf("Erro na abertura do arquivo de indice (%s): %s\n", file.c_str(), strerror(errno));
 		return false;
 	}
 
