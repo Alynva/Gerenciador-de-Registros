@@ -455,6 +455,80 @@ int busca(string path, string chave) {
 
 		fclose(lf);
 
+	} else {
+		FILE *lf = fopen(path.c_str(), "r+b");
+		
+		if(lf == NULL) {													// Verifica erros
+			printf("Erro na abertura do arquivo: %s\n", strerror(errno));
+			return 2;
+		}
+
+		char buffer[TAM_BLOCK];
+
+		fread(buffer, sizeof(char), sizeof(buffer), lf);
+
+		int n_registros = 0,
+			n_excluidos = 0;
+		sscanf(buffer, "N reg: %d\tN exl: %d", &n_registros, &n_excluidos);	// Lê do bloco o total de registros atual
+
+		int buffer_index = -1;												// Número do bloco a ser lido
+		bool achou = false;
+		char test_chave[3] = "";
+
+		do {
+			buffer_index++;
+
+			int tot_registros = n_registros + n_excluidos;
+
+			// Cálculo do número de registros que há no bloco atual
+			int max_registros;
+			if (buffer_index == 0) {										// Está no primeiro bloco
+				max_registros = tot_registros > (QTD_REG_1O_BLOCO+0) ? (QTD_REG_1O_BLOCO+0) : tot_registros;
+			} else if ((QTD_REG_1O_BLOCO+0) + buffer_index * (QTD_REG_P_BLOCO+0) <= tot_registros) {				// Está noutro bloco, completo
+				max_registros = (QTD_REG_P_BLOCO+0);
+			} else {														// Está noutro bloco, incompleto
+				max_registros = (tot_registros - (QTD_REG_1O_BLOCO+0)) % (QTD_REG_P_BLOCO+0);
+			}
+
+			// Deslocamento a ser realizado caso haja cabeçalho no bloco
+			int seek_buffer = 0;
+			if (buffer_index == 0) {
+				seek_buffer = TAM_CABECALHO;
+			}
+
+			// Varre o bloco lendo todos os registos
+			for (int i = 0, registro_index = 0; i < max_registros; i++, registro_index++) {
+
+				// REABRE A CADA REGISTRO POR QUE POR ALGUM MOTIVO A FUNÇÃO SSCANF "ZERA" O BUFFER
+				fseek(lf, buffer_index * TAM_BLOCK, SEEK_SET);
+				fread(buffer, sizeof(char), sizeof(buffer), lf);
+
+				// Formação do padrão usado para obter a chave a partir do bloco. Ex: %*100[^\n]%[^\n] para o segundo registro de um bloco sem cabeçalho
+				string pattern;
+				if (seek_buffer + registro_index * TAM_REGISTRO > 0) {
+					pattern = "%*";
+					pattern.append(to_string(seek_buffer + registro_index * TAM_REGISTRO));
+					pattern.append("[^\n]%");
+				} else {
+					pattern = "%";
+				}
+				pattern.append(to_string(TAM_CHAVE));
+				pattern.append("[^\n]");
+
+				sscanf(buffer, pattern.c_str(), test_chave);				// Lê o a chave no bloco
+
+				// Comparação da chave atual com a chave desejada
+				if (!strcmp(test_chave, "***")) {
+					pos = buffer_index * TAM_BLOCK + seek_buffer + registro_index * TAM_REGISTRO;	// Cálculo do RRN do registro
+
+					achou = true;
+					break;
+				}
+			}
+
+		} while (!achou && buffer_index < (n_registros + n_excluidos) / (QTD_REG_P_BLOCO+0));	// Lê outro bloco enquanto não tiver achado ou haverem blocos para serem lidos
+
+		fclose(lf);
 	}
 
 
@@ -485,6 +559,8 @@ void insere(string path, string chave, string numero_ddd, string numero_prefixo,
 		buffer_index = (n_registros < (QTD_REG_1O_BLOCO+0)) ? 0 : (n_registros + 1) / (QTD_REG_P_BLOCO+0);
 	} else {
 		pos = busca(path.c_str(), "***");
+		printf("os *** esta em %d\n", pos);
+		pausa();
 		buffer_index = RRN2NBLOCK(pos);
 	}
 
@@ -1211,6 +1287,7 @@ void compactarIndice(string file) {
 	//printf("Compactacao dos indices no arquivo %s realizada com sucesso!\n", file.c_str());
 }
 void insereIndice(string file, string chave, int reg_pos) {
+	printf("Inserindo indice com valor %d\n", reg_pos);
 
 	char buffer[TAM_BLOCK];
 
