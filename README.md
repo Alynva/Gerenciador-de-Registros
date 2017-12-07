@@ -10,33 +10,33 @@ Programa desenvolvido como trabalho na disciplina de ORI (2017.2) no curso BCC d
 
 ## Proposta do projeto
 
-Implementar uma estrutura simples, mas que possua as principais características relativas ao acesso e organização de dados em memória secundária.
+Implementar uma estrutura simples, mas que possua as principais características relativas ao acesso e organização de dados em memória secundária com indexação.
 
 ## Opções do menu
 
 ### Zerar o arquivo
 
-O programa simplesmente chama a função `zerar`, passando o nome do arquivo como parâmentro.
+O programa simplesmente chama a função `zerar` e a função `zerarIndice`, passando o nome dos arquivos (de dados e de índices) como parâmentro.
 
-Essa função por sua vez zera o arquivo e escreve o cabeçalho zerado.
+Essas funções zeram os arquivos e escrevem os cabeçalhos zerados do arquivo de dados e do arquivo de índices, respectivamente.
 
 ### Inserir registro
 
-O programa solicita ao usuário todas as [informações de um registro](#características-dos-registros) e chama a função `insere` passando o nome do arquivo e os dados capturados.
+O programa solicita ao usuário todas as [informações de um registro](#características-dos-registros) e chama a função `insere` passando o nome do arquivo e os dados capturados e a função `insereIndice` passando a chave do novo registro.
 
-Essa função reabre o arquivo e, baseado na quantidade de registro existentes e logicamente removidos, encontra o posição de inserção do novo registro (caso haja um registro logicamente removido, o novo registro é escrito em sua posição), e reescreve todo o bloco com as novas mudanças, além de reescrever o bloco do cabeçalho atualizando o número de registros. Caso a inserção esteja ocorrendo no bloco do cabeçalho, é feita apenas uma reescrita com os dados atualizados.
+Essa função procura, baseando-se no arquivo de índices, o próximo espaço livre onde o registro (e o índice) serão inseridos, guiado pela quantidade de registro existentes e logicamente removidos, e reescreve todo o bloco com as novas mudanças, além de reescrever o bloco do cabeçalho atualizando o número de registros. Caso a inserção esteja ocorrendo no bloco do cabeçalho, é feita apenas uma reescrita com os dados atualizados. O arquivo de índices é, então, ordenado.
 
 ### Buscar registro
 
-O programa solicita a chave de busca ao usuário e, utilizando a função `busca`, encontra a localização do registro no arquivo e, caso encontre, mostra todas as informações do mesmo.
+O programa solicita a chave de busca ao usuário e, utilizando a função `buscaIndice`, encontra a localização do índice no arquivo e, caso encontre, mostra todas as informações do mesmo.
 
-Para obter esta localização, a função varre o arquivo bloco a bloco e com o bloco em memória primária lê a chave de cada registro, realizando todos os cálculos de pular bytes tanto do cabeçalho quanto o do final do bloco, parando na primeira ocorrência.
+Para obter esta localização, a função varre o arquivo de índice bloco a bloco e com o bloco em memória primária, procura a chave e, caso encontre, abre o arquivo de dados e lê o registro localizado no offset de seu respectivo índice.
 
 ### Apagar registro
 
 O programa solicita a chave ao usuário e chama a função `remove`, passando o nome do arquivo e a chave.
 
-Essa função utiliza a função `busca`, encontra a localização da chave no arquivo e, caso encontre, abre o arquivo, calcula em qual bloco está o registro, obtém esse bloco do arquivo, substitui a chave desse registro por `***` e reescreve todo o bloco novamente, além de reescrever o bloco do cabeçalho atualizando os números de registros existentes e logicamente removidos. Caso a remoção esteja ocorrendo no bloco do cabeçalho, é feita apenas uma reescrita com os dados atualizados.
+Essa função utiliza a função `buscaIndice`, encontra a localização da chave no arquivo de índices e, caso encontre, abre o arquivo de dados, vai para a posição apontada pelo offset do índice, substitui a chave desse registro por `***` e reescreve todo o bloco novamente, além de reescrever o bloco do cabeçalho atualizando os números de registros existentes e logicamente removidos. Caso a remoção esteja ocorrendo no bloco do cabeçalho, é feita apenas uma reescrita com os dados atualizados. Então, o arquivo de índices é ordenado.
 
 ### Listar registros
 
@@ -71,7 +71,7 @@ Essa opção solicita ao usuário o número de registros a serem inseridos e, en
 
 ### Características dos registros
 
-Os registro possuem 5 campos de tamanhos fixos para serem preenchidos (todos strings):
+Os registros possuem 5 campos de tamanhos fixos para serem preenchidos (todos strings):
 1. Chave (3 bytes)
 2. Telefone (11 bytes)
 3. Data de nascimento (8 bytes)
@@ -81,6 +81,25 @@ Os registro possuem 5 campos de tamanhos fixos para serem preenchidos (todos str
 ### Características do cabeçalho
 
 No primeiro bloco, o arquivo possui um cabeçalho de tamanho 50 bytes que mostra quantos registros existem no arquivo e quantos foram logicamente removidos. Assim, o primeiro bloco possui o cabeçalho e 4 registros, enquanto todos os outros blocos possuem 5 registros cada.
+
+## O arquivo de índices
+
+### Características da estrutura
+
+-Sempre está em ordem alfabética (das chaves);
+-Os registros são de tamanho fixo (11 bytes);
+-Existe controle de blocos (cada bloco possui um número inteiro de índices);
+-Os blocos possuem 512 bytes.
+
+### Características dos registros
+
+Os registros possuem 2 campos de tamanhos fixos para serem preenchidos (todos strings);
+1. Chave (3 bytes)
+2. Offset (8 bytes)
+
+### Características do cabeçalho
+
+No primeiro bloco, o arquivo possui um cabeçalho de tamanho 50 bytes que mostra quantos índices existem no arquivo e quantos foram logicamente removidos. Assim, o primeiro bloco possui o cabeçalho e 42 índices, enquanto todos os outros blocos possuem 46 índices cada.
 
 ## Funções utilizadas no programa
 
