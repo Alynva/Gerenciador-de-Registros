@@ -224,7 +224,6 @@ int main(int argc, char** argv) {
 					} while (strlen(chave.c_str()) != 3 || !strIsAlpha(chave));
 
 					removeReg(FILE_NAME, chave);
-					removeIndice(INDICE_FILE_NAME, chave);
 
 					pausa();
 				}
@@ -772,14 +771,14 @@ void removeReg(string path, string chave, bool print) {
 		return;
 	}
 
-	int pos = buscaIndice(INDICE_FILE_NAME, chave);
+	int pos = busca(INDICE_FILE_NAME, chave);
 	bool achou = pos != -1;
 
 	if (print)
 		printf("\n");;
 
 	if (!achou && print) {
-			printf("Nao foi encontrado nenhum registro com esta chave.\n");
+		printf("Nao foi encontrado nenhum registro com esta chave.\n");
 	} else {
 		int buffer_index = RRN2NBLOCK(pos);
 		
@@ -843,6 +842,8 @@ void removeReg(string path, string chave, bool print) {
 		if (print) {
 			printf("O registro foi excluido com sucesso.\n");
 		}
+		
+		removeIndice(INDICE_FILE_NAME, chave);
 	}
 
 	fclose(lf);
