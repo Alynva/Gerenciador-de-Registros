@@ -455,7 +455,7 @@ int busca(string path, string chave) {
 
 		fclose(lf);
 
-	} else {
+	} else if (chave == "***") {
 		FILE *lf = fopen(path.c_str(), "r+b");
 		
 		if(lf == NULL) {													// Verifica erros
@@ -518,7 +518,7 @@ int busca(string path, string chave) {
 				sscanf(buffer, pattern.c_str(), test_chave);				// Lê o a chave no bloco
 
 				// Comparação da chave atual com a chave desejada
-				if (!strcmp(test_chave, "***")) {
+				if (!strcmp(test_chave, chave.c_str())) {
 					pos = buffer_index * TAM_BLOCK + seek_buffer + registro_index * TAM_REGISTRO;	// Cálculo do RRN do registro
 
 					achou = true;
@@ -559,8 +559,6 @@ void insere(string path, string chave, string numero_ddd, string numero_prefixo,
 		buffer_index = (n_registros < (QTD_REG_1O_BLOCO+0)) ? 0 : (n_registros + 1) / (QTD_REG_P_BLOCO+0);
 	} else {
 		pos = busca(path.c_str(), "***");
-		printf("os *** esta em %d\n", pos);
-		pausa();
 		buffer_index = RRN2NBLOCK(pos);
 	}
 
@@ -1287,7 +1285,6 @@ void compactarIndice(string file) {
 	//printf("Compactacao dos indices no arquivo %s realizada com sucesso!\n", file.c_str());
 }
 void insereIndice(string file, string chave, int reg_pos) {
-	printf("Inserindo indice com valor %d\n", reg_pos);
 
 	char buffer[TAM_BLOCK];
 
