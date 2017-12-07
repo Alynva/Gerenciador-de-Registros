@@ -2,6 +2,7 @@
 #include <iostream>							// std::string, std::cin, std::cout
 #include <string.h>							// std::string.c_str(), std::string.append(), strlen, strcmp, stoi
 #include <errno.h>							// strerror(errno)
+#include <fstream>							// ifstream
 
 #include "clear_console.cpp"				// Define CLEAR para funcionar multi-plataforma
 #include "pausa_console_com_menssagem.cpp"	// Simula system("pause")
@@ -334,35 +335,107 @@ int main(int argc, char** argv) {
 
 			case 99: // INSERIR EM LOTE
 				{
-					int count;
-					printf("Insira o numero de registros a serem inseridos: ");
-					scanf("%d", &count);
+					printf("De um arquivo .csv (1) ou gerar sequencialmente (2)? ");
+					int opt;
+					scanf("%d", &opt);
+					if (opt == 1) {
+						printf("Insira o caminho, absoluto ou relativo, do arquivo .csv: ");
+						string path;
+						cin >> path;
 
-					// Registro inicial
-					string string_chave = "aaa",
-						string_numero_ddd = "00",
-						string_numero_prefixo = "00000",
-						string_numero_sufixo = "0000",
-						string_data_dia = "00",
-						string_data_mes = "00",
-						string_data_ano = "0000",
-						string_email = "aaaaa",
-						string_nome = "Aaaa";
+						string line;
+						ifstream csvfile(path.c_str());
+						if (csvfile) {
+							getline(csvfile, line);
+							while (getline(csvfile, line)) {
+								int j = 0;
+								
+								string string_chave,
+									string_numero_ddd,
+									string_numero_prefixo,
+									string_numero_sufixo,
+									string_data_dia,
+									string_data_mes,
+									string_data_ano,
+									string_email,
+									string_nome;
 
-					for (int i = 0; i < count; i++) {
-						// Insere o registro
-						insere(FILE_NAME, string_chave, string_numero_ddd, string_numero_prefixo, string_numero_sufixo, string_data_dia, string_data_mes, string_data_ano, string_email, string_nome);
 
-						// "Incrementa" cada string do registro
-						string_chave = ppAlpha(string_chave);
-						string_numero_ddd = ppAlpha(string_numero_ddd);
-						string_numero_prefixo = ppAlpha(string_numero_prefixo);
-						string_numero_sufixo = ppAlpha(string_numero_sufixo);
-						string_data_dia = ppAlpha(string_data_dia);
-						string_data_mes = ppAlpha(string_data_mes);
-						string_data_ano = ppAlpha(string_data_ano);
-						string_email = ppAlpha(string_email);
-						string_nome = ppAlpha(string_nome);
+								// Continua a copiar os demais campos
+								for (int k = 0; k < TAM_CHAVE; j++, k++) {
+									string_chave.append(to_string(line[j]));
+								}
+								j++;
+								for (int k = 0; k < TAM_NUMERO_DDD; j++, k++) {
+									string_numero_ddd.append(to_string(line[j]));
+								}
+								j++;
+								for (int k = 0; k < TAM_NUMERO_PREFIXO; j++, k++) {
+									string_numero_prefixo.append(to_string(line[j]));
+								}
+								j++;
+								for (int k = 0; k < TAM_NUMERO_SUFIXO; j++, k++) {
+									string_numero_sufixo.append(to_string(line[j]));
+								}
+								j++;
+								for (int k = 0; k < TAM_DATA_DIA; j++, k++) {
+									string_data_dia.append(to_string(line[j]));
+								}
+								j++;
+								for (int k = 0; k < TAM_DATA_MES; j++, k++) {
+									string_data_mes.append(to_string(line[j]));
+								}
+								j++;
+								for (int k = 0; k < TAM_DATA_ANO; j++, k++) {
+									string_data_ano.append(to_string(line[j]));
+								}
+								j++;
+								for (int k = 0; k < TAM_EMAIL && line[j] != ' '; j++, k++) {
+									string_email.append(to_string(line[j]));
+								}
+								j++;
+								for (int k = 0; k < TAM_NOME; j++, k++) {
+									string_nome.append(to_string(line[j]));
+								}
+								
+								insere(FILE_NAME, string_chave, string_numero_ddd, string_numero_prefixo, string_numero_sufixo, string_data_dia, string_data_mes, string_data_ano, string_email, string_nome);
+							}
+							csvfile.close();
+						}
+						else
+							cout << "fooey\n";
+
+					} else if (opt == 2) {
+						printf("Insira o numero de registros a serem inseridos: ");
+						int count;
+						scanf("%d", &count);
+
+						// Registro inicial
+						string string_chave = "aaa",
+							string_numero_ddd = "00",
+							string_numero_prefixo = "00000",
+							string_numero_sufixo = "0000",
+							string_data_dia = "00",
+							string_data_mes = "00",
+							string_data_ano = "0000",
+							string_email = "aaaaa",
+							string_nome = "Aaaa";
+
+						for (int i = 0; i < count; i++) {
+							// Insere o registro
+							insere(FILE_NAME, string_chave, string_numero_ddd, string_numero_prefixo, string_numero_sufixo, string_data_dia, string_data_mes, string_data_ano, string_email, string_nome);
+
+							// "Incrementa" cada string do registro
+							string_chave = ppAlpha(string_chave);
+							string_numero_ddd = ppAlpha(string_numero_ddd);
+							string_numero_prefixo = ppAlpha(string_numero_prefixo);
+							string_numero_sufixo = ppAlpha(string_numero_sufixo);
+							string_data_dia = ppAlpha(string_data_dia);
+							string_data_mes = ppAlpha(string_data_mes);
+							string_data_ano = ppAlpha(string_data_ano);
+							string_email = ppAlpha(string_email);
+							string_nome = ppAlpha(string_nome);
+						}
 					}
 					compactarIndice(INDICE_FILE_NAME);
 
